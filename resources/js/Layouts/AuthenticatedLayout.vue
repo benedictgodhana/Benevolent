@@ -15,9 +15,9 @@ const {hasRole} = usePermission();
 <template>
     <div>
         <div class="min-h-screen bg-gray-100" >
-            <nav class="bg-white border-b border-gray-100" style="background-color: darkblue;color:white">
+            <nav class="bg-white border-b border-gray-100" style="background-color: darkblue;color:black;height:100px">
                 <!-- Primary Navigation Menu -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="background-color: darkblue;color:white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" >
                     <div class="flex justify-between h-16" >
                         <div class="flex">
                             <!-- Logo -->
@@ -30,16 +30,16 @@ const {hasRole} = usePermission();
                             </div>
 
                             <!-- Navigation Links -->
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" >
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="link" >
+                            <!-- <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" >
+                                <v-chip :href="route('dashboard')" :active="route().current('dashboard')" class="link mt-5"  style="background-color: orange;" label elevation="5" >
                                     My Page
-                                </NavLink>
-                            </div>
+                                </v-chip>
+                            </div> -->
 
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" >
-                                <NavLink :href="route('admin.index')" :active="route().current('dashboard')" class="link" v-if="hasRole('admin')">
+                                <v-chip :href="route('admin.index')" :active="route().current('dashboard')" class="link mt-5" v-if="hasRole('admin')" style="background-color: darkblue;" label elevation="5">
                                     Dashboard
-                                </NavLink>
+                                </v-chip>
                             </div>
                             <!-- <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="link">
@@ -75,9 +75,10 @@ const {hasRole} = usePermission();
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
-                                            <button
+                                            <v-chip
+                                            label
                                                 type="button"
-                                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                style="background-color: darkblue;color:white"
                                             >
                                                 {{ $page.props.auth.user.name }}
 
@@ -93,7 +94,7 @@ const {hasRole} = usePermission();
                                                         clip-rule="evenodd"
                                                     />
                                                 </svg>
-                                            </button>
+                                            </v-chip>
                                         </span>
                                     </template>
 

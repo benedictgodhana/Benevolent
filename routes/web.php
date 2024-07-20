@@ -9,6 +9,8 @@
     use Inertia\Inertia;
     use App\Http\Controllers\UserController;
     use App\Http\Controllers\RoleController;
+    use App\Http\Controllers\memberController;
+
 
 
     /*
@@ -34,10 +36,6 @@
         Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-        Route::get('/dashboard', function () {
-            return Inertia::render('Dashboard');
-        })->name('dashboard');
-
 
         // Check if the user is an admin
 
@@ -46,8 +44,35 @@
 
     });
 
+    Route::middleware(['auth', 'role:member'])->group(function () {
+
+
+
+        Route::get('/contribution', [memberController::class, 'contribution'])->name('contribution');
+        Route::get('/notifications', [memberController::class, 'notifications'])->name('notifications');
+        Route::get('/settings', [memberController::class, 'settings'])->name('settings');
+
+
+        Route::get('/dashboard', function () {
+            return Inertia::render('Dashboard');
+        })->name('dashboard');
+
+
+    });
+
     Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin',[AdminController::class,'index'])->name('admin.index');
+
+    Route::get('/profile',[AdminController::class,'adminProfile'])->name('profile');
+
+    Route::get('/my_contribution',[AdminController::class,'adminContribution'])->name('admincontribution');
+
+    Route::get('/my_notifications',[AdminController::class,'adminNotification'])->name('adminnotification');
+
+    Route::get('/my_settings',[AdminController::class,'adminSetting'])->name('adminsettings');
+
+
+
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/contributions', [ContributionController::class, 'contribution'])->name('contributions.index');

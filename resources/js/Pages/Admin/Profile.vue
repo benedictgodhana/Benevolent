@@ -1,6 +1,6 @@
 <template>
     <Head title="Dashboard" />
-    <AuthenticatedLayout>
+    <AdminLayout>
       <v-container width="100%" style="max-width: 1600px;">
         <v-row>
           <!-- Profile Card Section -->
@@ -9,6 +9,8 @@
     <v-card-text class="text-center py-4">
       <v-avatar size="200">
         <img src="/Images/ben.jpg" alt="User Avatar" height="250">
+
+
       </v-avatar>
       <v-card-text style="font-weight: 800;">
         {{ $page.props.auth.user.name }}
@@ -543,29 +545,28 @@
           </v-card-text>
         </v-card>
       </v-dialog>
-    </AuthenticatedLayout>
+    </AdminLayout>
   </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Pie } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale } from 'chart.js';
 import AccessControl from '@/Components/AccessControl.vue';
 import NavLink from '@/Components/NavLink.vue';
 
-import axiosInstance from '../plugins/api';
 
 
 
 
 const links = [
-    { text: 'My Profile', routeName: 'dashboard', icon: 'mdi-account' },
-    { text: 'My Contribution', routeName: 'contribution', icon: 'mdi-cash' },
-    { text: 'Notifications', routeName: 'notifications', icon: 'mdi-bell' },
-    { text: 'My Settings', routeName: 'settings', icon: 'mdi-cog' }
+    { text: 'My Profile', routeName: 'profile', icon: 'mdi-account' },
+    { text: 'My Contribution', routeName: 'my_contribution', icon: 'mdi-cash' },
+    { text: 'Notifications', routeName: 'my_notifications', icon: 'mdi-bell' },
+    { text: 'My Settings', routeName: 'my_settings', icon: 'mdi-cog' }
   ];
 
 const search = ref('');

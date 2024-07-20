@@ -53,7 +53,7 @@ class AdminController extends Controller
     }
 
     public function manageRoles(): Response
-    {   
+    {
         return Inertia::render('ManageRoles');
     }
 
@@ -68,6 +68,29 @@ class AdminController extends Controller
         return Inertia::render('Dashboard');
     }
 
+    public function adminProfile(): Response
+    {
+        return Inertia::render('Admin/Profile');
+    }
 
+
+
+    public function adminContribution(): Response
+    {
+        return Inertia::render('Admin/Contribution');
+    }
+
+
+    public function adminNotification(): Response
+    {
+        return Inertia::render('Admin/Notifications');
+    }
+
+
+
+    public function adminSetting(): Response
+    {
+        return Inertia::render('Admin/Settings');
+    }
 
 }

@@ -21,17 +21,19 @@ const form = useForm({
 const submit = () => {
     form.post(route('login'), {
         onFinish: (event) => {
-            // Check if login was successful
-            if (event.detail.jetstream.response && event.detail.jetstream.response.status === 'success') {
+            const response = event.detail.jetstream.response;
+            if (response && response.status === 'success') {
                 // Save token in local storage
-                localStorage.setItem('token', event.detail.jetstream.response.token);
+                localStorage.setItem('token', response.token);
 
-                // Redirect to dashboard or any other page after successful login
-                // You can replace 'dashboard' with the appropriate route name
-                return redirect(route('dashboard'));
+                // Redirect to appropriate page based on user role
+                if (response.role === 'admin') {
+                    Inertia.visit(route('admin.dashboard'));
+                } else {
+                    Inertia.visit(route('dashboard'));
+                }
             } else {
                 // Handle unsuccessful login
-                // For example, display an error message
                 console.error('Login unsuccessful');
             }
         },

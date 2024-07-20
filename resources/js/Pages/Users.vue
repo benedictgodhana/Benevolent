@@ -317,6 +317,15 @@
             variant="outlined"
           ></v-text-field>
         </v-col>
+
+        <v-col cols="12" md="6" lg="4">
+          <v-text-field
+            v-model="selectedUser.profile.status"
+            label="Membership Status"
+            readonly
+            variant="outlined"
+          ></v-text-field>
+        </v-col>
       </v-row>
     </v-card-text>
   </v-card>
@@ -380,6 +389,7 @@ export default {
         { title: 'ID', value: 'id' },
         { title: 'Name', value: 'name' },
         { title: 'Email', value: 'email' },
+        { title: 'Membership Status', value: 'status' },
         { title: 'Roles', value: 'roles' },
         { title: 'Actions', value: 'actions', sortable: false },
       ],

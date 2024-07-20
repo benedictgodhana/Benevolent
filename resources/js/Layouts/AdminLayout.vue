@@ -38,7 +38,10 @@
       <!-- App Bar -->
       <v-app-bar app class="border-b" height="90" elevation="2">
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        <v-toolbar-title></v-toolbar-title>
+        <v-toolbar-title style="background-color: ; white-space: normal;">
+    <span class="mr-2">Welcome</span> {{ $page.props.auth.user.name }} !
+</v-toolbar-title>
+
         <v-spacer></v-spacer>
 
         <!-- Search Bar -->
@@ -49,15 +52,16 @@
           hide-details
           class="hidden md:flex ma-4 mt-6"
           variant="outlined"
-          rounded
         ></v-text-field>
 
-        <v-chip label elevation="5" :href="route('dashboard')" class="mr-4" style="background-color: darkblue;color:white;"><v-icon>mdi-chevron-left</v-icon>My Contribution Table</v-chip>
-        <v-chip label elevation="5"  style="background-color: orange;">
+        <v-chip label elevation="5" :href="route('profile')" class="mr-4" style="background-color: darkblue;color:white;"><v-icon>mdi-account</v-icon>My Profile and Contribution History</v-chip>
+        <v-chip label elevation="5"  style="background-color: orange;" class="mr-4">
           <v-icon >mdi-bell-outline</v-icon> Notification
         </v-chip>
-        <v-chip icon class="ma-4" label elevation="5" style="background-color: red;color:white">
-          <v-icon>mdi-logout</v-icon> Logout
+        <v-chip label class="mr-4" elevation="5" style="background-color: red;color:red" color="red">
+            <ResponsiveNavLink :href="route('logout')" method="post" as="button" style="color:white;background-color: red;">
+                                <v-icon>mdi-logout</v-icon> Log Out
+                            </ResponsiveNavLink>
         </v-chip>
       </v-app-bar>
 
@@ -72,6 +76,7 @@
   <script setup>
   import { ref } from 'vue';
   import NavLink from '@/Components/NavLink.vue';
+  import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 
   const drawer = ref(true);
   const drawerWidth = '240px'; // Adjust as needed
@@ -79,7 +84,7 @@
 
   const items = [
     { text: 'Dashboard', routeName: 'admin', icon: 'mdi-view-dashboard' },
-    { text: 'Users', routeName: 'users', icon: 'mdi-account' },
+    { text: 'Members', routeName: 'users', icon: 'mdi-account-multiple' },
     { text: 'Manage Roles', routeName: 'manage-roles', icon: 'mdi-account-group' },
     { text: 'Contributions', routeName: 'contributions', icon: 'mdi-cash' }
   ];

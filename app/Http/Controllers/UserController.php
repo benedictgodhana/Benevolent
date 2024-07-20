@@ -42,6 +42,7 @@ class UserController extends Controller
                 'spouseTel' => $user->profile->spouseTel,
                 'children' => $user->profile->children,
                 'siblings' => $user->profile->siblings,
+                'status' => $user->profile->approval_status,
             ] : null, // Handle case where profile might not exist
         ];
     });

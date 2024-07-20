@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -10,9 +11,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Mail\WelcomeEmail;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -65,6 +70,8 @@ class RegisteredUserController extends Controller
             'siblings' => 'nullable|array',
             'siblings.*.name' => 'nullable|string|max:255',
             'siblings.*.dob' => 'nullable|date',
+            'signedPdf' => 'nullable|file|mimes:pdf|max:2048',
+            'agree' => 'required|boolean',
         ]);
 
         $user = User::create([
@@ -72,6 +79,12 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Handle file upload
+        $filePath = null;
+        if ($request->hasFile('signedPdf')) {
+            $filePath = $request->file('signedPdf')->store('signed_pdfs', 'public');
+        }
 
         $userProfile = UserProfile::create([
             'user_id' => $user->id,
@@ -101,9 +114,20 @@ class RegisteredUserController extends Controller
             'spouseTel' => $request->spouseTel,
             'children' => json_encode($request->children),
             'siblings' => json_encode($request->siblings),
+            'signedPdf' => $filePath, // Save the file path
+            'agree' => $request->agree, // Save the agree field
         ]);
 
+        // Assign the "member" role to the user
+        $role = Role::where('name', 'member')->first();
+        if ($role) {
+            $user->assignRole($role);
+        }
+
         event(new Registered($user));
+
+        // Send welcome email
+        Mail::to($user->email)->send(new WelcomeEmail($user));
 
         return redirect(RouteServiceProvider::HOME);
     }
