@@ -199,7 +199,7 @@ const handleFileUpload = (event) => {
         src="/Images/University-Logo-Vertical-01.png"
         contain
         max-width="200"
-        class="mx-auto mt-4"
+        class="mx-auto mt-16"
       ></v-img>
 
       <v-toolbar flat style="background-color: darkblue;color:white">

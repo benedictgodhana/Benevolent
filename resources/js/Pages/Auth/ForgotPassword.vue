@@ -23,6 +23,13 @@ const submit = () => {
         <Head title="Forgot Password" />
 
         <v-card max-width="500" width="100%" class="elevation-0 login-card">
+           <a href="/"> <v-img
+                src="/Images/University-Logo-Vertical-01.png"
+                contain
+                max-width="200"
+                class="mx-auto mt-4"
+            ></v-img></a>
+
             <v-card-title class="text-center">Forgot Password</v-card-title>
 
             <v-card-text>

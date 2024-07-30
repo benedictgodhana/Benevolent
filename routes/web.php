@@ -51,7 +51,7 @@
         Route::get('/contribution', [memberController::class, 'contribution'])->name('contribution');
         Route::get('/notifications', [memberController::class, 'notifications'])->name('notifications');
         Route::get('/settings', [memberController::class, 'settings'])->name('settings');
-
+        Route::post('/user/profile-pic', [UserController::class, 'updateProfilePic'])->name('user.profile-pic');
 
         Route::get('/dashboard', function () {
             return Inertia::render('Dashboard');
@@ -71,7 +71,7 @@
 
     Route::get('/my_settings',[AdminController::class,'adminSetting'])->name('adminsettings');
 
-
+    Route::post('/contributions/import', [ContributionController::class, 'import']);
 
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

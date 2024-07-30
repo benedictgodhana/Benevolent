@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 use App\Models\Contribution;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ContributionsImport;
+
 
 class ContributionController extends Controller
 {
@@ -14,7 +17,7 @@ class ContributionController extends Controller
     $user = Auth::user();
 
     // Retrieve contributions associated with the authenticated user
-    $contributions = $user->    contributions()->get();
+    $contributions = $user-> contributions()->get();
 
     // Return the contributions as JSON
     return response()->json(['contributions' => $contributions]);
@@ -57,7 +60,20 @@ class ContributionController extends Controller
     ]);
 }
 
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:csv,xlsx,xls',
+    ]);
 
+    try {
+        Excel::import(new ContributionsImport, $request->file('file'));
+
+        return response()->json(['message' => 'Contributions imported successfully']);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error importing contributions', 'error' => $e->getMessage()], 500);
+    }
+}
 
 
 }

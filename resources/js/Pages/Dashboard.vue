@@ -5,23 +5,39 @@
         <v-row>
           <!-- Profile Card Section -->
           <v-col cols="12" md="3" class="mb-4 ">
-  <v-card class="profile-card" elevation="0" style="border: 1px solid #e0e0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+  <v-card class="profile-card" elevation="0" style="border: 1px solid #e0e0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);background-color: darkblue">
     <v-card-text class="text-center py-4">
-      <v-avatar size="200">
-        <img src="/Images/ben.jpg" alt="User Avatar" height="250">
-      </v-avatar>
-      <v-card-text style="font-weight: 800;">
+        <div>
+            <v-avatar size="200">
+                <img :src="`/storage/${profilePicUrl}`" alt="User Avatar" height="250">
+
+            </v-avatar>
+
+            <v-file-input
+      v-model="file"
+      label="Choose a file"
+      @change="onFileChange"
+      outlined
+      value=""
+      variant="underlined"
+
+      style="color:white"
+    ></v-file-input>
+    <v-btn @click="uploadProfilePic" style="text-transform: capitalize" width="100%">Upload</v-btn>
+  </div>
+      <v-card-text style="font-weight: 800;font-size: 18px;color:white">
         {{ $page.props.auth.user.name }}
       </v-card-text>
+
       <v-divider></v-divider>
       <div class="mt-3">
         <v-divider></v-divider>
-        <v-list class="mt-10">
+        <v-list class="mt-10" style="background-color: darkblue;color:white">
           <v-list-item v-for="(item, i) in links" :key="i">
-            <NavLink :href="item.routeName" class="v-list-item" style="color: black;">
+            <NavLink :href="item.routeName" class="v-list-item" style="color:white;">
               <template v-slot:default="{ href, isActive, isExactActive, isLink }">
                 <v-list-item-icon v-if="item.icon" class="list-item-icon">
-                  <v-icon :icon="item.icon" style="color:darkblue"></v-icon>
+                  <v-icon :icon="item.icon" style="color:white"></v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
                   <v-list-item-title :class="{ 'primary--text': isExactActive }" v-text="item.text"></v-list-item-title>
@@ -43,7 +59,7 @@
       v-model="tab"
       style="background-color: darkblue;color:white"
     >
-      <v-tab value="one" style="text-transform: capitalize">Personal Information</v-tab>
+      <v-tab value="one" style="text-transform: capitalize">My Details</v-tab>
       <v-tab value="two" style="text-transform: capitalize">Marital Status </v-tab>
       <v-tab value="three" style="text-transform: capitalize">Family Details</v-tab>
       <v-tab value="four" style="text-transform: capitalize">Location</v-tab>
@@ -53,8 +69,38 @@
       <v-tabs-window v-model="tab">
         <v-tabs-window-item value="one">
   <v-card class="pa-6" elevation="0">
-    <v-card-title style="background-color: darkblue; color:white">Personal Information</v-card-title>
-    <v-card-text class="mt-5">
+
+
+    <v-card-text style="margin-top:-30px">
+    <v-btn
+      v-if="userProfile.approval_status === 'pending'"
+      color="blue"
+      style="font-weight: 800;text-transform: capitalize;"
+      width="100%"
+
+    >
+      Pending
+    </v-btn>
+    <v-btn
+      v-else-if="userProfile.approval_status === 'approved'"
+      color="green"
+      style="font-weight: 800;text-transform: capitalize;"
+      elevation="0"
+      width="100%"
+    >
+      Approved
+    </v-btn>
+    <v-btn
+      v-else-if="userProfile.approval_status === 'rejected'"
+      color="red"
+      style="font-weight: 800;text-transform: capitalize;"
+      width="100%"
+
+    >
+      Rejected
+    </v-btn>
+  </v-card-text>
+  <v-card-text class="mt-5">
       Update your account's profile information and email address.
     </v-card-text>
     <v-card-text>
@@ -545,10 +591,9 @@
       </v-dialog>
     </AuthenticatedLayout>
   </template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, useForm } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Pie } from 'vue-chartjs';
@@ -556,76 +601,99 @@ import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale } f
 import AccessControl from '@/Components/AccessControl.vue';
 import NavLink from '@/Components/NavLink.vue';
 
-import axiosInstance from '../plugins/api';
-
-
-
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 const links = [
     { text: 'My Profile', routeName: 'dashboard', icon: 'mdi-account' },
     { text: 'My Contribution', routeName: 'contribution', icon: 'mdi-cash' },
     { text: 'Notifications', routeName: 'notifications', icon: 'mdi-bell' },
     { text: 'My Settings', routeName: 'settings', icon: 'mdi-cog' }
-  ];
+];
 
 const search = ref('');
 const selectedFilter = ref(null);
 const filters = ['All', 'Option 1', 'Option 2'];
-const tab =ref(0)
+const tab = ref(0);
 const user = usePage().props.auth.user;
 const userProfile = user ? user.userProfile || {} : {};
 const contributions = user ? user.contributions || [] : [];
-
 const items = ref(contributions);
 
+
+const profilePicUrl = ref(user.profile_pic ? `/storage/${user.profile_pic}` : '/default-avatar.png'); // Ensure correct path for your storage
+const form = useForm({
+    profilePic: null,
+});
+
+
+
+// Fetch profile picture on mount
+onMounted(() => {
+    profilePicUrl.value = user.profile_pic || '/default-avatar.png'; // Fallback to a default avatar
+});
+
+const onFileChange = (event) => {
+    form.profilePic = event.target.files[0];
+};
+
+const uploadProfilePic = () => {
+    form.post('/user/profile-pic', {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            profilePicUrl.value = page.props.auth.user.profile_pic; // Update the profile picture URL
+        },
+    });
+};
+
 const filteredItems = computed(() => {
-  return items.value.filter((item) => {
-    const matchesFilter = !selectedFilter.value || selectedFilter.value === 'All' || item.description.includes(selectedFilter.value);
-    const matchesSearch = !search.value || item.description.toLowerCase().includes(search.value.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+    return items.value.filter((item) => {
+        const matchesFilter = !selectedFilter.value || selectedFilter.value === 'All' || item.description.includes(selectedFilter.value);
+        const matchesSearch = !search.value || item.description.toLowerCase().includes(search.value.toLowerCase());
+        return matchesFilter && matchesSearch;
+    });
 });
 
 const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options);
+    const date = new Date(dateString);
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
 };
 
 const userInitials = computed(() => {
-  const nameParts = user.name.split(' ');
-  if (nameParts.length >= 2) {
-    const firstNameInitial = nameParts[0].charAt(0).toUpperCase();
-    const lastNameInitial = nameParts[1].charAt(0).toUpperCase();
-    return firstNameInitial + lastNameInitial;
-  } else {
-    return user.name.charAt(0).toUpperCase() + (user.name.charAt(1) || '').toUpperCase();
-  }
+    const nameParts = user.name.split(' ');
+    if (nameParts.length >= 2) {
+        const firstNameInitial = nameParts[0].charAt(0).toUpperCase();
+        const lastNameInitial = nameParts[1].charAt(0).toUpperCase();
+        return firstNameInitial + lastNameInitial;
+    } else {
+        return user.name.charAt(0).toUpperCase() + (user.name.charAt(1) || '').toUpperCase();
+    }
 });
 
 const downloadCSV = () => {
-  const csvContent = 'data:text/csv;charset=utf-8,' + items.value.map(e => Object.values(e).join(',')).join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', 'table_data.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    const csvContent = 'data:text/csv;charset=utf-8,' + items.value.map(e => Object.values(e).join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'table_data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 };
 
 const totalAmount = computed(() => {
-  return items.value.reduce((sum, item) => sum + parseFloat(item.amount.replace(/[^0-9.-]+/g,"")), 0).toFixed(0);
+    return items.value.reduce((sum, item) => sum + parseFloat(item.amount.replace(/[^0-9.-]+/g, "")), 0).toFixed(0);
 });
 
 const dialog = ref(false);
 const selectedItem = ref({});
 
 const viewDetails = (item) => {
-  selectedItem.value = item;
-  dialog.value = true;
+    selectedItem.value = item;
+    dialog.value = true;
 };
 </script>
+
 
 
   <style scoped>

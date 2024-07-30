@@ -47,13 +47,12 @@ const submit = () => {
 
         <v-card max-width="500" width="100%" class="elevation-0 login-card">
             <!-- Logo -->
-            <v-img
+            <a href="/"> <v-img
                 src="/Images/University-Logo-Vertical-01.png"
                 contain
                 max-width="200"
                 class="mx-auto mt-4"
-            ></v-img>
-
+            ></v-img></a>
 
             <v-card-text>
                 <div v-if="status" class="mb-4">

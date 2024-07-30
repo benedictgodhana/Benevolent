@@ -3,7 +3,7 @@
     <v-container>
       <!-- Main content of the page -->
       <v-card max-width="1500" elevation="0">
-        <v-card-title class="text-center" style="background-color: darkblue; color: white; border-radius: 40px;">
+        <v-card-title class="text-center" style="background-color: darkblue; color: white; ">
           Users' List
           <v-spacer></v-spacer>
         </v-card-title>
@@ -28,26 +28,27 @@
         <v-divider></v-divider>
         <!-- Data Table -->
         <v-data-table
-          :headers="headers"
-          :items="users"
-          :items-per-page="10"
-          class="elevation-0"
-        >
-          <template v-slot:item.roles="{ item }">
-            <span>{{ item.roles.join(', ') }}</span> <!-- Join roles into a comma-separated string -->
-          </template>
-          <template v-slot:item.actions="{ item }">
-            <v-chip icon color="white" @click="openDialog('edit', item)" elevation=0>
-              <v-icon color="green">mdi-pencil</v-icon>
-            </v-chip>
-            <v-chip icon color="white" @click="openDialog('view', item)" elevation="0">
-              <v-icon color="primary">mdi-eye</v-icon>
-            </v-chip>
-            <v-chip icon color="white" @click="openDialog('delete', item)">
-              <v-icon color="red">mdi-delete</v-icon>
-            </v-chip>
-          </template>
-        </v-data-table>
+  :headers="headers"
+  :items="filteredUsers"
+  :items-per-page="10"
+  class="elevation-0"
+>
+  <template v-slot:item.roles="{ item }">
+    <span>{{ item.roles.join(', ') }}</span>
+  </template>
+  <template v-slot:item.actions="{ item }">
+    <v-chip icon color="white" @click="openDialog('edit', item)" elevation=0>
+      <v-icon color="green">mdi-pencil</v-icon>
+    </v-chip>
+    <v-chip icon color="white" @click="openDialog('view', item)" elevation="0">
+      <v-icon color="primary">mdi-eye</v-icon>
+    </v-chip>
+    <v-chip icon color="white" @click="openDialog('delete', item)">
+      <v-icon color="red">mdi-delete</v-icon>
+    </v-chip>
+  </template>
+</v-data-table>
+
       </v-card>
 
       <!-- Edit Dialog -->
@@ -364,7 +365,6 @@
     </v-container>
   </AdminLayout>
 </template>
-
 <script>
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -378,15 +378,14 @@ export default {
     return {
       users: [],
       selectedUser: {
-      name: '',
-      email: '',
-      roles: [],
-      profile: {
-        surname: '' // Add other default fields as needed
-      }
-    },
+        name: '',
+        email: '',
+        roles: [],
+        profile: {
+          surname: '' // Add other default fields as needed
+        }
+      },
       headers: [
-        { title: 'ID', value: 'id' },
         { title: 'Name', value: 'name' },
         { title: 'Email', value: 'email' },
         { title: 'Membership Status', value: 'status' },
@@ -407,61 +406,58 @@ export default {
   computed: {
     formattedRoles() {
       return this.selectedUser.roles ? this.selectedUser.roles.join(', ') : '';
+    },
+    filteredUsers() {
+      // Filter users to only include those with the role "member"
+      return this.users.filter(user => user.roles.includes('member'));
     }
   },
   methods: {
     openDialog(type, user) {
-    // Default profile structure with all necessary fields
-    const defaultProfile = {
-      surname: '',
-      otherNames: '',
-      dept: '',
-      employmentType: '',
-      employeeNo: '',
-      dateOfBirth: '',
-      sex: '',
-      religion: '',
-      telR: '',
-      telCell: '',
-      currentAddress: '',
-      residence: '',
-      postalAddress: '',
-      homeDistrict: '',
-      fatherName: '',
-      fatherDOB: '',
-      fatherOccupation: '',
-      motherName: '',
-      motherDOB: '',
-      motherOccupation: '',
-      maritalStatus: '',
-      spouseName: '',
-      dateOfMarriage: '',
-      spouseTel: '',
-      children: '',
-      siblings: ''
-    };
+      const defaultProfile = {
+        surname: '',
+        otherNames: '',
+        dept: '',
+        employmentType: '',
+        employeeNo: '',
+        dateOfBirth: '',
+        sex: '',
+        religion: '',
+        telR: '',
+        telCell: '',
+        currentAddress: '',
+        residence: '',
+        postalAddress: '',
+        homeDistrict: '',
+        fatherName: '',
+        fatherDOB: '',
+        fatherOccupation: '',
+        motherName: '',
+        motherDOB: '',
+        motherOccupation: '',
+        maritalStatus: '',
+        spouseName: '',
+        dateOfMarriage: '',
+        spouseTel: '',
+        children: '',
+        siblings: ''
+      };
 
-    // Ensure the selected user has a profile with default values
-    this.selectedUser = {
-      ...user,
-      profile: user.profile ? { ...defaultProfile, ...user.profile } : defaultProfile
-    };
+      this.selectedUser = {
+        ...user,
+        profile: user.profile ? { ...defaultProfile, ...user.profile } : defaultProfile
+      };
 
-    // Open the appropriate dialog based on type
-    this.dialog[type] = true;
+      this.dialog[type] = true;
 
-    // Additional logic for different dialog types
-    if (type === 'edit') {
-      // Logic for edit dialog, if needed
-      console.log('Editing user:', this.selectedUser);
-    } else if (type === 'view') {
-      // Logic for view dialog, if needed
-      console.log('Viewing user:', this.selectedUser);
-    } else if (type === 'delete') {
-      // Logic for delete dialog, if needed
-      console.log('Deleting user:', this.selectedUser);
-    }
-  },
+      if (type === 'edit') {
+        console.log('Editing user:', this.selectedUser);
+      } else if (type === 'view') {
+        console.log('Viewing user:', this.selectedUser);
+      } else if (type === 'delete') {
+        console.log('Deleting user:', this.selectedUser);
+      }
+    },
     saveEdit(user) {
       console.log('Saving edit:', user);
       this.dialog.edit = false;

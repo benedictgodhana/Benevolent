@@ -6,8 +6,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use App\Models\UserProfile;
 use App\Models\Contribution;
+use App\Models\UserProfile;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -37,11 +37,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => function () use ($request) {
                     if ($user = $request->user()) {
-                        return array_merge($user->only('id', 'name', 'email'), [
-                            'userProfile' => UserProfile::where('user_id', $user->id)->first(),
+                        return array_merge($user->only('id', 'name', 'email', 'profile_pic'), [
                             'contributions' => Contribution::where('user_id', $user->id)->get(),
                             'roles' => $user->getRoleNames(),
                             'permissions' => $user->getAllPermissions()->pluck('name'),
+                            'userProfile' => UserProfile::where('user_id', $user->id)->first(),
                         ]);
                     }
                     return null;
