@@ -1,57 +1,119 @@
 <template>
-    <nav class="bg-gray-800 p-6 fixed w-full top-0 left-0 z-10 elevation-1" style="background-color: darkblue ;">
-        <div class="container mx-auto flex justify-between items-center">
-            <!-- Logo -->
-            <v-img
+    <v-app-bar
+      app
+      color="darkblue"
+      dark
+      elevation="2"
+      class="nav-bar"
+    >
+      <v-container class="d-flex align-center justify-space-between">
+        <!-- Logo -->
+        <v-img
+          src="/Images/logo.png"
+          contain
+          max-width="140"
+          class="logo"
+        ></v-img>
 
-            src="/Images/logo.png"
-            contain
-                max-width="160"
-                class="logo"
-            ></v-img>
+        <!-- Navigation Links (Uncomment if needed) -->
+        <!-- <v-btn text class="nav-link">Home</v-btn>
+        <v-btn text class="nav-link">About Us</v-btn>
+        <v-btn text class="nav-link">Programs</v-btn>
+        <v-btn text class="nav-link">Contact</v-btn> -->
 
-            <div class="flex items-center">
-                <template v-if="props.canLogin">
-                    <Link v-if="props.auth.user" :href="route('dashboard')" class="btn ms-4" style="text-transform: capitalize;">
-                        Dashboard
-                    </Link>
-                    <template v-else>
-                        <v-btn v-if="props.canRegister" :href="route('register')" class="btn ms-4" style="text-transform: capitalize; color:black; background-color:orangered;">
-                            <v-icon size="19">mdi-account-plus</v-icon> Register
-                        </v-btn>
-                        <v-btn :href="route('login')" class="ms-4" style="text-transform: capitalize; color:black;background-color: orange;" variant="outlined">
-                            <v-icon size="19">mdi-login</v-icon> Log in
-                        </v-btn>
-                    </template>
-                </template>
-            </div>
+        <!-- Search Bar (Uncomment if needed) -->
+        <!-- <v-text-field
+          solo
+          flat
+          hide-details
+          prepend-inner-icon="mdi-magnify"
+          label="Search"
+          class="search-input"
+        ></v-text-field> -->
+
+        <!-- Auth Links -->
+        <div class="auth-links">
+          <template v-if="props.canLogin">
+            <Link v-if="props.auth.user" :href="route('dashboard')" class="btn">
+              Dashboard
+            </Link>
+            <template v-else>
+              <Link v-if="props.canRegister" :href="route('register')" class="nav-link ms-4">
+                <v-icon size="19" color="orange">mdi-account-check</v-icon>
+                Membership Registration
+              </Link>
+              <Link :href="route('login')" class="nav-link ms-4">
+                <v-icon size="19" color="orange">mdi-login</v-icon>
+                Log in
+              </Link>
+            </template>
+          </template>
         </div>
-    </nav>
-</template>
+      </v-container>
+    </v-app-bar>
+  </template>
 
-<script setup>
-import { Link, usePage } from '@inertiajs/vue3';
-import { VImg, VBtn, VIcon } from 'vuetify/components';
+  <script setup>
+  import { Link, usePage } from '@inertiajs/vue3';
+  import { VImg, VIcon } from 'vuetify/components';
 
-const { props } = usePage();
-const { canLogin, canRegister } = props;
-</script>
+  const { props } = usePage();
+  const { canLogin, canRegister } = props;
+  </script>
 
-<style scoped>
-.btn {
-    @apply inline-block px-4 py-2 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest bg-gray-800 hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150;
-}
+  <style scoped>
+  .nav-bar {
+    background-color: darkblue;
+    height:90px
+  }
 
-.hidden-sm-and-down {
-    @apply hidden sm:inline-block;
-}
-
-.ms-4 {
-    margin-left: 1rem;
-}
-
-.logo {
-    max-width: 150px; /* Adjust the size as needed */
+  .logo {
+    max-width: 150px;
     height: auto;
-}
-</style>
+    margin-top: 20px;
+  }
+
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s;
+    margin-top: 20px;
+
+  }
+
+  .nav-link:hover {
+    color: #ffb74d; /* Light orange color */
+  }
+
+  .btn {
+    background-color: orange;
+    color: white;
+    text-transform: capitalize;
+    margin-left: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+
+  .btn:hover {
+    background-color: #e64a19; /* Darker orange */
+  }
+
+  .ms-4 {
+    margin-left: 1rem;
+  }
+
+  .search-input {
+    max-width: 300px;
+    background-color: white;
+    border-radius: 25px;
+    padding-left: 20px;
+  }
+
+  .auth-links {
+    display: flex;
+    align-items: center;
+  }
+  </style>

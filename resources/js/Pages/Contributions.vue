@@ -2,7 +2,7 @@
     <AdminLayout>
       <v-container>
         <v-card max-width="1500" elevation="0">
-          <v-card-title class="text-center" style="background-color: darkblue; color: white; ">
+          <v-card-title class="text-center" style="background-color: darkblue; color: white;">
             Contributions List
             <v-spacer></v-spacer>
           </v-card-title>
@@ -23,22 +23,44 @@
           </v-card-text>
           <br>
           <v-row>
-            <v-col cols="12" sm="6" md="4">
+            <v-col cols="12" sm="6" md="3">
               <v-text-field v-model="filters.search" label="Search" @input="filterContributions" variant="underlined"></v-text-field>
             </v-col>
-            <v-col cols="12" sm="6" md="4">
+            <v-col cols="12" sm="6" md="3">
               <v-select v-model="filters.member" :items="members" label="Filter by Member" @change="filterContributions" variant="underlined"></v-select>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-text-field
+                v-model="filters.startDate"
+                label="Start Date"
+                type="date"
+                variant="underlined"
+                @change="filterContributions"
+              ></v-text-field>
+
+            </v-col>
+            <v-col>
+                <v-text-field
+                v-model="filters.endDate"
+                label="End Date"
+                type="date"
+                variant="underlined"
+                @change="filterContributions"
+              ></v-text-field>
             </v-col>
           </v-row>
           <br>
           <v-data-table
             :headers="headers"
             :items="filteredContributions"
-            :items-per-page="10"
+            :items-per-page="8"
             class="elevation-0"
           >
             <template v-slot:item.user="{ item }">
               <span>{{ item.user.name }}</span>
+            </template>
+            <template v-slot:item.date="{ item }">
+              <span>{{ formatDateTime(item.date) }}</span>
             </template>
             <template v-slot:item.actions="{ item }">
               <v-dialog v-model="dialog.edit" max-width="500px">
@@ -75,9 +97,10 @@
                   <v-card-title>View Contribution</v-card-title>
                   <v-card-text>
                     <div>ID: {{ item.id }}</div>
-                    <div>Date: {{ item.date }}</div>
+                    <div>Date: {{ formatDateTime(item.date) }}</div>
                     <div>Description: {{ item.description }}</div>
                     <div>Amount: {{ item.amount }}</div>
+                    <div>Contribution Code: {{ item.code }}</div>
                   </v-card-text>
                 </v-card>
               </v-dialog>
@@ -118,14 +141,16 @@
   const filters = ref({
     search: '',
     member: '',
+    startDate: '',
+    endDate: ''
   });
 
   const headers = [
-    { title: 'ID', value: 'id' },
     { title: 'Date', value: 'date' },
     { title: 'Member Name', value: 'user.name' },
     { title: 'Description', value: 'description' },
     { title: 'Amount', value: 'amount' },
+    { title: 'Contribution Code', value: 'code' },
     { title: 'Actions', value: 'actions', sortable: false },
   ];
 
@@ -141,19 +166,62 @@
 
   const filteredContributions = computed(() => {
     const searchTerm = filters.value.search.toLowerCase();
+    const startDate = filters.value.startDate ? new Date(filters.value.startDate) : null;
+    const endDate = filters.value.endDate ? new Date(filters.value.endDate) : null;
+
     return contributions.value.filter(c => {
+      const date = new Date(c.date);
       return (
         (filters.value.search === '' ||
           c.id.toString().includes(searchTerm) ||
-          c.date.includes(searchTerm) ||
+          c.date.toLowerCase().includes(searchTerm) ||
           c.user.name.toLowerCase().includes(searchTerm) ||
           c.description.toLowerCase().includes(searchTerm) ||
-          c.amount.toString().includes(searchTerm)
+          c.amount.toString().includes(searchTerm) ||
+          c.code.toLowerCase().includes(searchTerm)
         ) &&
-        (filters.value.member === '' || c.user.name === filters.value.member)
+        (filters.value.member === '' || c.user.name === filters.value.member) &&
+        (!startDate || date >= startDate) &&
+        (!endDate || date <= endDate)
       );
     });
   });
+
+  const formatDateTime = (dateTime) => {
+  const date = new Date(dateTime);
+
+  // Utility function to get ordinal suffix for day
+  const getOrdinalSuffix = (day) => {
+    if (day > 3 && day < 21) return 'th'; // Special case for 11th-13th
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+
+  // Format day with ordinal suffix
+  const day = date.getDate();
+  const dayWithSuffix = `${day}${getOrdinalSuffix(day)}`;
+
+  // Format month and year
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+
+  // Format time in 12-hour format with AM/PM
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
+
+  // Combine date and time
+  return `${dayWithSuffix} ${month} ${year} ${formattedTime}`;
+};
+
 
   const saveEdit = (contribution) => {
     console.log('Saving edit:', contribution);

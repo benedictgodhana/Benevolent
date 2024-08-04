@@ -9,7 +9,7 @@
             <v-card class="pa-3" elevation="4" rounded>
               <v-card-title style="background-color: darkblue;color:white">Total Users</v-card-title>
               <v-divider></v-divider>
-              <v-card-text>{{ totalUsers }}</v-card-text>
+              <v-card-text style="font-size: 18px; font-weight: 700;">{{ totalUsers }}</v-card-text>
               <v-btn label width="100%" color="orange" style="text-transform: none;">View All Users</v-btn>
             </v-card>
           </v-col>
@@ -18,7 +18,7 @@
             <v-card class="pa-3" elevation="4" rounded>
               <v-card-title style="background-color: darkblue;color:white">Total Contributions</v-card-title>
               <v-divider></v-divider>
-              <v-card-text>{{ totalContributions }}</v-card-text>
+              <v-card-text style="font-size: 18px; font-weight: 700;">{{ totalContributions }}</v-card-text>
               <v-btn label width="100%" color="orange" style="text-transform: none;">View All Contributions</v-btn>
             </v-card>
           </v-col>
@@ -27,7 +27,7 @@
             <v-card class="pa-3" elevation="4" rounded>
               <v-card-title style="background-color: darkblue;color:white">Monthly Collection</v-card-title>
               <v-divider></v-divider>
-              <v-card-text>{{ monthlyCollection }}</v-card-text>
+              <v-card-text style="font-size: 18px; font-weight: 700;">{{ monthlyCollection }}</v-card-text>
               <v-btn label width="100%" color="orange" style="text-transform: none;">View All Monthly Collections</v-btn>
             </v-card>
           </v-col>

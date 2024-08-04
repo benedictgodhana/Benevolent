@@ -44,9 +44,10 @@ class ContributionController extends Controller
     $contributions = Contribution::with('user')->get()->map(function ($contribution) {
         return [
             'id' => $contribution->id,
-            'date' => $contribution->date,
+            'date' => $contribution->created_at,
             'description' => $contribution->description,
             'amount' => $contribution->amount,
+            'code' =>$contribution->code,
             'user' => [
                 'id' => $contribution->user->id,
                 'name' => $contribution->user->name,

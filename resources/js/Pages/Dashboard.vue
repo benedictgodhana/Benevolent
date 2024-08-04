@@ -5,7 +5,7 @@
         <v-row>
           <!-- Profile Card Section -->
           <v-col cols="12" md="3" class="mb-4 ">
-  <v-card class="profile-card" elevation="0" style="border: 1px solid #e0e0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);background-color: darkblue">
+  <v-card class="profile-card" elevation="15" style="border: 1px solid #e0e0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);background-color: darkblue">
     <v-card-text class="text-center py-4">
         <div>
             <v-avatar size="200">
@@ -23,11 +23,11 @@
 
       style="color:white"
     ></v-file-input>
-    <v-btn @click="uploadProfilePic" style="text-transform: capitalize" width="100%">Upload</v-btn>
+    <v-btn @click="uploadProfilePic" style="text-transform: capitalize" width="100%" color="orange">Upload</v-btn>
   </div>
-      <v-card-text style="font-weight: 800;font-size: 18px;color:white">
+      <!-- <v-card-text style="font-weight: 800;font-size: 18px;color:white">
         {{ $page.props.auth.user.name }}
-      </v-card-text>
+      </v-card-text> -->
 
       <v-divider></v-divider>
       <div class="mt-3">
@@ -54,21 +54,34 @@
 
           <!-- Form Section -->
           <v-col cols="12" md="9">
-            <v-card>
+            <v-card elevation="15" rounded>
     <v-tabs
       v-model="tab"
       style="background-color: darkblue;color:white"
     >
-      <v-tab value="one" style="text-transform: capitalize">My Details</v-tab>
-      <v-tab value="two" style="text-transform: capitalize">Marital Status </v-tab>
-      <v-tab value="three" style="text-transform: capitalize">Family Details</v-tab>
-      <v-tab value="four" style="text-transform: capitalize">Location</v-tab>
+    <v-tab value="one" style="text-transform: capitalize;font-weight:1000">
+  <v-icon left color="orange">mdi-account</v-icon>
+  My Details
+</v-tab>
+<v-tab value="two" style="text-transform: capitalize;font-weight:1000">
+  <v-icon left color="orange">mdi-heart</v-icon>
+  Marital Status
+</v-tab>
+<v-tab value="three" style="text-transform: capitalize;font-weight:1000">
+  <v-icon left color="orange">mdi-account-multiple</v-icon>
+  Family Details
+</v-tab>
+<v-tab value="four" style="text-transform: capitalize;font-weight:1000">
+  <v-icon left color="orange">mdi-map-marker</v-icon>
+  Location
+</v-tab>
+
     </v-tabs>
 
     <v-card-text>
       <v-tabs-window v-model="tab">
         <v-tabs-window-item value="one">
-  <v-card class="pa-6" elevation="0">
+  <v-card class="pa-6" elevation="4">
 
 
     <v-card-text style="margin-top:-30px">
@@ -88,7 +101,7 @@
       elevation="0"
       width="100%"
     >
-      Approved
+     Membership Status: Approved
     </v-btn>
     <v-btn
       v-else-if="userProfile.approval_status === 'rejected'"

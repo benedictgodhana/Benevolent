@@ -17,8 +17,8 @@ class UserProfile extends Model
         'user_id',
         'surname',
         'otherNames',
-        'dept',
         'employmentType',
+        'contract_duration',
         'employeeNo',
         'dateOfBirth',
         'sex',
@@ -41,13 +41,22 @@ class UserProfile extends Model
         'spouseTel',
         'children',
         'siblings',
+        'signedPdf',
+        'agree',
+        'department_id',
     ];
+
 
     /**
      * The user that the profile belongs to.
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id'); // Adjust foreign key if needed
+    }
+
+    public function contributions()
+    {
+        return $this->hasMany(Contribution::class);
     }
 }

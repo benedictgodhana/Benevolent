@@ -5,43 +5,28 @@
         <v-row>
           <!-- Profile Card Section -->
           <v-col cols="12" md="3" class="mb-4 ">
-  <v-card class="profile-card" elevation="0" style="border: 1px solid #e0e0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);background-color: darkblue;">
+  <v-card class="profile-card" elevation="15" style="border: 1px solid #e0e0e0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);background-color: darkblue">
     <v-card-text class="text-center py-4">
-      <v-avatar size="200">
-        <img src="/Images/ben.jpg" alt="User Avatar" height="250">
-      </v-avatar>
-      <v-card-text style="font-weight: 800;font-size: 18px;color:white">
-        {{ $page.props.auth.user.name }}
-      </v-card-text>
-      <v-card-text>
-    <v-btn
-      v-if="userProfile.approval_status === 'pending'"
-      color="blue"
-      style="font-weight: 800;text-transform: capitalize;"
-      width="100%"
+        <div>
+            <v-avatar size="200">
+                <img :src="`/storage/${profilePicUrl}`" alt="User Avatar" height="250">
 
-    >
-      Pending
-    </v-btn>
-    <v-btn
-      v-else-if="userProfile.approval_status === 'approved'"
-      color="green"
-      style="font-weight: 800;text-transform: capitalize;"
-      elevation="0"
-      width="100%"
-    >
-      Approved
-    </v-btn>
-    <v-btn
-      v-else-if="userProfile.approval_status === 'rejected'"
-      color="red"
-      style="font-weight: 800;text-transform: capitalize;"
-      width="100%"
+            </v-avatar>
 
-    >
-      Rejected
-    </v-btn>
-  </v-card-text>
+            <v-file-input
+      v-model="file"
+      label="Choose a file"
+      @change="onFileChange"
+      outlined
+      value=""
+      variant="underlined"
+
+      style="color:white"
+    ></v-file-input>
+    <v-btn @click="uploadProfilePic" style="text-transform: capitalize" width="100%" color="orange">Upload</v-btn>
+  </div>
+     
+
       <v-divider></v-divider>
       <div class="mt-3">
         <v-divider></v-divider>
@@ -67,7 +52,7 @@
 <v-row>
           <!-- Form Section -->
           <v-col cols="12" md="" class="notification-list mt-4">
-          <v-card rounded>
+          <v-card rounded elevation="15">
             <v-card-title style="background-color: darkblue; color: white;" class="text-center">
               Notifications
             </v-card-title>
@@ -151,7 +136,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, useForm } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Pie } from 'vue-chartjs';
@@ -215,6 +200,34 @@ const filteredItems = computed(() => {
     return matchesFilter && matchesSearch;
   });
 });
+
+
+
+
+const profilePicUrl = ref(user.profile_pic ? `/storage/${user.profile_pic}` : '/default-avatar.png'); // Ensure correct path for your storage
+const form = useForm({
+    profilePic: null,
+});
+
+
+
+// Fetch profile picture on mount
+onMounted(() => {
+    profilePicUrl.value = user.profile_pic || '/default-avatar.png'; // Fallback to a default avatar
+});
+
+const onFileChange = (event) => {
+    form.profilePic = event.target.files[0];
+};
+
+const uploadProfilePic = () => {
+    form.post('/user/profile-pic', {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            profilePicUrl.value = page.props.auth.user.profile_pic; // Update the profile picture URL
+        },
+    });
+};
 
 const userInitials = computed(() => {
   const nameParts = user.name.split(' ');

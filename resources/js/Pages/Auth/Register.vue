@@ -3,12 +3,15 @@ import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Inertia } from '@inertiajs/inertia';
 import {
-  VContainer, VRow, VCol, VTextField, VCheckbox, VBtn, VAlert, VCard, VCardTitle, VCardText, VCardActions, VToolbar, VSpacer, VIcon, VDatePicker, VMenu
+  VContainer, VRow, VCol, VSelect, VTextField, VCheckbox, VBtn, VAlert, VCard, VCardTitle, VCardText, VCardActions, VToolbar, VSpacer, VIcon, VDatePicker, VMenu
 } from 'vuetify/components';
 
-import { saveAs } from 'file-saver';
+// Define props
+const props = defineProps(['departments']);
 
+// Step and form states
 const step = ref(1);
 const form = useForm({
   // Add your form fields here
@@ -18,8 +21,9 @@ const form = useForm({
   password_confirmation: '',
   surname: '',
   otherNames: '',
-  dept: '',
+  department_id: '', // Updated to match department_id
   employmentType: '',
+  contract_duration: '',
   employeeNo: '',
   dateOfBirth: '',
   sex: '',
@@ -43,10 +47,18 @@ const form = useForm({
   children: [{ name: '', dob: '' }],
   siblings: [],
   agree: false,
-  signedPdf: null
+  signedPdf: null,
 });
 
+// PDF blob URL state
 const pdfBlobUrl = ref(null);
+const alert = ref({
+  visible: false,
+  type: 'success',
+  message: '',
+});
+
+// Generate PDF function
 const generatePdf = () => {
   const doc = new jsPDF();
 
@@ -66,8 +78,9 @@ const generatePdf = () => {
       ['Password', form.password || ''],
       ['Surname', form.surname || ''],
       ['Other Names', form.otherNames || ''],
-      ['Department', form.dept || ''],
+      ['Department', getDepartment(form.department_id) || ''],
       ['Employment Type', form.employmentType || ''],
+      ['Contract Duration in (years)', form.contract_duration || ''],
       ['Employee No.', form.employeeNo || ''],
       ['Date of Birth', form.dateOfBirth || ''],
       ['Sex', form.sex || ''],
@@ -88,9 +101,8 @@ const generatePdf = () => {
       ['Spouse\'s Name', form.spouseName || ''],
       ['Date of Marriage', form.dateOfMarriage || ''],
       ['Spouse\'s Telephone', form.spouseTel || ''],
-      ['Number of Children', form.children || ''],
-      ['Number of Siblings', form.siblings || ''],
-      // Add other form fields here as needed
+      ['Number of Children', form.children.length || '0'],
+      ['Number of Siblings', form.siblings.length || '0'],
     ],
     startY: 10, // Pull the table up even higher
     margin: { top: 10 } // Adjust top margin to ensure content isn't cut off
@@ -121,55 +133,109 @@ const generatePdf = () => {
   pdfBlobUrl.value = URL.createObjectURL(pdfBlob);
 };
 
+// Add Sibling
 const addSibling = () => {
   form.siblings.push({ name: '', dob: '' });
 };
 
+// Get Department Name
+const getDepartment = (id) => {
+  const department = props.departments.find(dept => dept.id === id);
+  return department ? department.name : 'Unknown Department';
+};
+
+// Remove Sibling
 const removeSibling = (index) => {
   form.siblings.splice(index, 1);
 };
 
+// Add Child
 const addChild = () => {
   form.children.push({ name: '', dob: '' });
 };
 
+// Remove Child
 const removeChild = (index) => {
   form.children.splice(index, 1);
 };
 
+// Next Step
 const nextStep = () => {
   step.value += 1;
 };
 
+// Previous Step
 const prevStep = () => {
   step.value -= 1;
 };
 
-
-const submit = () => {
-  if (validateStep(step)) {
+// Submit Form
+const submit = async () => {
+  if (validateStep(step.value)) {
     const formData = new FormData();
     formData.append('formData', JSON.stringify(form));
     if (form.signedPdf) {
       formData.append('signedPdf', form.signedPdf);
     }
 
-    form.post(route('register'), {
-      data: formData,
-      onFinish: () => form.reset(),
-    });
+    try {
+      await form.post(route('register'), {
+        data: formData,
+        onFinish: () => {
+          form.reset();
+          alert.value = {
+            visible: true,
+            type: 'success',
+            message: 'Registration successful! Please check your email. Registration is pending.',
+          };
+
+          // Redirect using Inertia
+          setTimeout(() => {
+            Inertia.visit(route('register')); // Replace with your actual route name
+          }, 2000); // Adjust delay as needed
+        },
+      });
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert.value = {
+        visible: true,
+        type: 'error',
+        message: 'Registration failed. Please try again.',
+      };
+    }
   } else {
     // Handle validation errors or notify the user
   }
 };
 
-
+// Validate Step
 const validateStep = (step) => {
   switch (step) {
     case 1:
-      return form.name !== '' && form.email !== '' && form.password !== '' && form.password_confirmation !== '';
-    case 2:
-      return form.surname !== '' && form.otherNames !== '' && form.dept !== '' && form.employeeNo !== '' && form.dateOfBirth !== '' && form.sex !== '' && form.religion !== '' && form.telR !== '' && form.telCell !== '' && form.currentAddress !== '' && form.employmentType !== '' && form.residence !== '' && form.postalAddress !== '' && form.homeDistrict !== '';
+ // Check for required fields and password confirmation
+ return form.name && form.email && form.password && form.password_confirmation &&
+        form.password === form.password_confirmation &&
+        form.password.length >= 8 &&
+        /.+@strathmore\.edu$/.test(form.email);
+   case 2:
+      const basicValidation = form.surname !== '' &&
+        form.otherNames !== '' &&
+        form.department_id !== '' &&
+        form.employeeNo !== '' &&
+        form.dateOfBirth !== '' &&
+        form.sex !== '' &&
+        form.religion !== '' &&
+        form.telR !== '' &&
+        form.telCell !== '' &&
+        form.currentAddress !== '' &&
+        form.employmentType !== '' &&
+        form.residence !== '' &&
+        form.postalAddress !== '' &&
+        form.homeDistrict !== '';
+
+      const contractValidation = form.employmentType !== 'Contract' || form.contract_duration !== '';
+
+      return basicValidation && contractValidation;
     case 3:
       if (form.maritalStatus === 'Married') {
         return form.fatherName !== '' && form.fatherDOB !== '' && form.fatherOccupation !== '' && form.motherName !== '' && form.motherDOB !== '' && form.motherOccupation !== '' && form.spouseName !== '' && form.dateOfMarriage !== '' && form.spouseTel !== '';
@@ -183,14 +249,16 @@ const validateStep = (step) => {
   }
 };
 
+// Handle File Upload
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     form.signedPdf = file;
   }
 };
-
 </script>
+
+
 <template>
   <v-container class="d-flex justify-center align-center min-vh-100">
     <v-card max-width="800" width="100%" class="mx-auto" elevation="0">
@@ -202,221 +270,437 @@ const handleFileUpload = (event) => {
         class="mx-auto mt-16"
       ></v-img>
 
-      <v-toolbar flat style="background-color: darkblue;color:white">
+      <v-card-text>
+        <v-toolbar flat style="color:black" color="orange">
         <v-btn :href="route('login')" style="text-transform: capitalize;"><v-icon>mdi-chevron-left</v-icon>Login</v-btn>
         <v-toolbar-title class="text-center">Membership Registration</v-toolbar-title>
         <v-spacer></v-spacer>
       </v-toolbar>
+      </v-card-text>
 
-      <template v-if="step === 1">
-        <!-- Step 1: Account Information -->
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field label="Name" v-model="form.name" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Email" v-model="form.email" required variant="outlined"></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-    <v-col cols="12" md="6">
-      <v-text-field
-        label="Password"
-        v-model="form.password"
-        type="password"
-        required
-        variant="outlined"
-        :rules="[
-          v => !!v || 'Password is required',
-          v => (v && v.length >= 6) || 'Password must be at least 6 characters long'
-        ]"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-text-field
-        label="Confirm Password"
-        v-model="form.password_confirmation"
-        type="password"
-        required
-        variant="outlined"
-        :rules="[
-          v => !!v || 'Confirm password is required',
-          v => v === form.password || 'Passwords must match'
-        ]"
-      ></v-text-field>
-    </v-col>
-  </v-row>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="nextStep" :disabled="!validateStep(step)">Next <v-icon>mdi-chevron-right</v-icon></v-btn>
-        </v-card-actions>
-      </template>
+      <v-alert
+      v-if="alert.visible"
+      :type="alert.type"
+      dismissible
+      @click:close="alert.visible = false"
+    >
+      {{ alert.message }}
+    </v-alert>
+
+      <v-alert
+      v-if="error"
+      type="error"
+      dismissible
+      class="mb-4"
+    >
+      {{ error }}
+    </v-alert>
+    <template v-if="step === 1">
+  <!-- Step 1: Account Information -->
+  <v-card-text>
+    <v-row>
+      <v-col cols="12" md="6">
+        <v-text-field
+          label="Name"
+          v-model="form.name"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-account"
+          :rules="[
+            v => !!v || 'Name is required'
+          ]"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="6">
+        <v-text-field
+          label="Email"
+          v-model="form.email"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-email"
+          :rules="[
+            v => !!v || 'Email is required',
+            v => /.+@strathmore\.edu$/.test(v) || 'Email must be a valid @strathmore.edu address'
+          ]"
+        ></v-text-field>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" md="6">
+        <v-text-field
+          label="Password"
+          v-model="form.password"
+          type="password"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-lock"
+          :rules="[
+            v => !!v || 'Password is required',
+            v => (v && v.length >= 6) || 'Password must be at least 6 characters long'
+          ]"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="6">
+        <v-text-field
+          label="Confirm Password"
+          v-model="form.password_confirmation"
+          type="password"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-lock"
+          :rules="[
+            v => !!v || 'Confirm password is required',
+            v => v === form.password || 'Passwords must match'
+          ]"
+        ></v-text-field>
+      </v-col>
+    </v-row>
+  </v-card-text>
+  <v-card-actions>
+    <v-spacer></v-spacer>
+    <v-btn
+      style="background-color: darkblue; color: white; text-transform: capitalize;"
+      @click="nextStep"
+      :disabled="!validateStep(step)"
+    >
+      Next <v-icon>mdi-chevron-right</v-icon>
+    </v-btn>
+  </v-card-actions>
+</template>
+
 
       <template v-if="step === 2">
-        <!-- Step 2: Personal Information -->
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field label="Surname" v-model="form.surname" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Other Names" v-model="form.otherNames" required variant="outlined"></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field label="Department" v-model="form.dept" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Employee No." v-model="form.employeeNo" required variant="outlined"></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field label="Date of Birth" v-model="form.dateOfBirth" required variant="outlined" type="date"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select :items="['Male', 'Female']" label="Sex" v-model="form.sex" required variant="outlined"></v-select>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-select :items="['Catholic', 'Protestant', 'Other']" label="Religion" v-model="form.religion" required variant="outlined"></v-select>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Tel. (R)" v-model="form.telR" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Tel. (Cell)" v-model="form.telCell" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select v-model="form.employmentType" :items="['Permanent', '2 yr contract']" label="Employment Type" required outlined variant="outlined"></v-select>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Residence" v-model="form.residence" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Postal Address" v-model="form.postalAddress" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Home District" v-model="form.homeDistrict" required variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field label="Current Address" v-model="form.currentAddress" required variant="outlined"></v-text-field>
-              </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="prevStep"><v-icon>mdi-chevron-left</v-icon>Previous</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="nextStep" :disabled="!validateStep(step)">Next <v-icon>mdi-chevron-right</v-icon></v-btn>
-        </v-card-actions>
-      </template>
+  <!-- Step 2: Personal Information -->
+  <v-card-text>
+    <v-row>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Surname"
+          v-model="form.surname"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-account"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Other Names"
+          v-model="form.otherNames"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-account"
+        ></v-text-field>
+      </v-col>
 
-      <template v-if="step === 3">
-          <!-- Step 3: Family Information -->
-          <v-card-text>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field label="Father’s Name" v-model="form.fatherName" required variant="outlined"></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field label="Father’s Date of Birth" v-model="form.fatherDOB" required variant="outlined" type="date"></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field label="Mother’s Name" v-model="form.motherName" required variant="outlined"></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field label="Mother’s Date of Birth" v-model="form.motherDOB" required variant="outlined" type="date"></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field label="Father’s Occupation" v-model="form.fatherOccupation" required variant="outlined"></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field label="Mother’s Occupation" v-model="form.motherOccupation" required variant="outlined"></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select :items="['Married', 'Single']" label="Marital Status" v-model="form.maritalStatus" required variant="outlined"></v-select>
-              </v-col>
-              <v-col cols="12" md="6" v-if="form.maritalStatus === 'Married'">
-                <v-text-field label="Spouse Name" v-model="form.spouseName" variant="outlined"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6" v-if="form.maritalStatus === 'Married'">
-              <v-text-field label="Date of Marriage" v-model="form.dateOfMarriage" variant="outlined" type="date"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6" v-if="form.maritalStatus === 'Married'">
-              <v-text-field label="Tel No. of Spouse" v-model="form.spouseTel" variant="outlined"></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row v-if="form.maritalStatus === 'Married'">
-            <v-col cols="12">
-              <h3>Children's Details</h3>
-              <br>
-              <v-row v-for="(child, index) in form.children" :key="index" class="mb-3">
-                <v-col cols="6">
-                  <v-text-field
-                    label="Child's Name"
-                    v-model="child.name"
-                    required
-                    variant="outlined"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="4">
-                  <v-menu
-                    v-model="child.dobMenu"
-                    :close-on-content-click="false"
-                    :return-value.sync="child.dob"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="auto"
-                  >
-                    <template #activator="{ on, attrs }">
-                      <v-text-field
-                        v-bind="attrs"
-                        v-on="on"
-                        label="Date of Birth"
-                        v-model="child.dob"
-                        required
-                        variant="outlined"
-                        type="date"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker
-                      v-model="child.dob"
-                      @input="child.dobMenu = false"
-                      no-title
-                    ></v-date-picker>
-                  </v-menu>
-                </v-col>
-                <v-col cols="12" class="d-flex justify-end" style="margin-top: -100px;">
-                  <v-btn icon @click="removeChild(index)" style="background-color: darkblue;color:white">
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </v-col>
-              </v-row>
-              <v-btn @click="addChild" style="background-color: darkblue;color:white;text-transform: capitalize;" width="100%">Add Child</v-btn>
-            </v-col>
-          </v-row>
+      <v-col cols="12" md="4">
+        <v-select
+          label="Department"
+          v-model="form.department_id"
+          :items="departments"
+          item-title="name"
+          item-value="id"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-briefcase"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Employee No."
+          v-model="form.employeeNo"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-badge-account"
+        ></v-text-field>
+      </v-col>
 
-          <v-row>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Date of Birth"
+          v-model="form.dateOfBirth"
+          required
+          variant="outlined"
+          type="date"
+          prepend-inner-icon="mdi-calendar"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-select
+          :items="['Male', 'Female']"
+          label="Gender"
+          v-model="form.sex"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-gender-male-female"
+        ></v-select>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-select
+          :items="['Catholic', 'Protestant', 'Other']"
+          label="Religion"
+          v-model="form.religion"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-religion"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Tel. (R)"
+          v-model="form.telR"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-phone"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Tel. (Cell)"
+          v-model="form.telCell"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-cellphone"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-select
+          v-model="form.employmentType"
+          :items="['Permanent', 'Contract']"
+          label="Employment Type"
+          required
+          outlined
+          variant="outlined"
+          prepend-inner-icon="mdi-briefcase-check"
+        ></v-select>
+      </v-col>
+
+      <!-- Conditionally render this field based on employment type -->
+      <v-col v-if="form.employmentType === 'Contract'" cols="12" md="4">
+        <v-select
+          v-model="form.contract_duration"
+          :items="[1, 2, 3]"
+          label="Contract Duration (Years)"
+          required
+          outlined
+          variant="outlined"
+          prepend-inner-icon="mdi-calendar-clock"
+        ></v-select>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Residence"
+          v-model="form.residence"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-home"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Postal Address"
+          v-model="form.postalAddress"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-email-outline"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Home District"
+          v-model="form.homeDistrict"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-map-marker"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Current Address"
+          v-model="form.currentAddress"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-map-marker"
+        ></v-text-field>
+      </v-col>
+    </v-row>
+  </v-card-text>
+  <v-card-actions>
+    <v-btn style="background-color: darkblue; color:white; text-transform: capitalize;" @click="prevStep">
+      <v-icon>mdi-chevron-left</v-icon>Previous
+    </v-btn>
+    <v-spacer></v-spacer>
+    <v-btn style="background-color: darkblue; color:white; text-transform: capitalize;" @click="nextStep" :disabled="!validateStep(step)">
+      Next <v-icon>mdi-chevron-right</v-icon>
+    </v-btn>
+  </v-card-actions>
+</template>
+
+
+<template v-if="step === 3">
+  <!-- Step 3: Family Information -->
+  <v-card-text>
+    <v-row>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Father’s Name"
+          v-model="form.fatherName"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-account"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Father’s Date of Birth"
+          v-model="form.fatherDOB"
+          required
+          variant="outlined"
+          type="date"
+          prepend-inner-icon="mdi-calendar"
+        ></v-text-field>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Mother’s Name"
+          v-model="form.motherName"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-account"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Mother’s Date of Birth"
+          v-model="form.motherDOB"
+          required
+          variant="outlined"
+          type="date"
+          prepend-inner-icon="mdi-calendar"
+        ></v-text-field>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Father’s Occupation"
+          v-model="form.fatherOccupation"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-briefcase"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-text-field
+          label="Mother’s Occupation"
+          v-model="form.motherOccupation"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-briefcase"
+        ></v-text-field>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-select
+          :items="['Married', 'Single']"
+          label="Marital Status"
+          v-model="form.maritalStatus"
+          required
+          variant="outlined"
+          prepend-inner-icon="mdi-heart"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" md="4" v-if="form.maritalStatus === 'Married'">
+        <v-text-field
+          label="Spouse Name"
+          v-model="form.spouseName"
+          variant="outlined"
+          prepend-inner-icon="mdi-account-heart"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4" v-if="form.maritalStatus === 'Married'">
+        <v-text-field
+          label="Date of Marriage"
+          v-model="form.dateOfMarriage"
+          variant="outlined"
+          type="date"
+          prepend-inner-icon="mdi-calendar-heart"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="4" v-if="form.maritalStatus === 'Married'">
+        <v-text-field
+          label="Tel No. of Spouse"
+          v-model="form.spouseTel"
+          variant="outlined"
+          prepend-inner-icon="mdi-phone"
+        ></v-text-field>
+      </v-col>
+    </v-row>
+    <v-row v-if="form.maritalStatus === 'Married'">
+      <v-col cols="12">
+        <h3>Children's Details</h3>
+        <br>
+        <v-row v-for="(child, index) in form.children" :key="index" class="mb-3">
+          <v-col cols="6">
+            <v-text-field
+              label="Child's Name"
+              v-model="child.name"
+              required
+              variant="outlined"
+              prepend-inner-icon="mdi-account-child"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="4">
+            <v-menu
+              v-model="child.dobMenu"
+              :close-on-content-click="false"
+              :return-value.sync="child.dob"
+              transition="scale-transition"
+              offset-y
+              min-width="auto"
+            >
+              <template #activator="{ on, attrs }">
+                <v-text-field
+                  v-bind="attrs"
+                  v-on="on"
+                  label="Date of Birth"
+                  v-model="child.dob"
+                  required
+                  variant="outlined"
+                  type="date"
+                  prepend-inner-icon="mdi-calendar"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="child.dob"
+                @input="child.dobMenu = false"
+                no-title
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+          <v-col cols="12" class="d-flex justify-end" style="margin-top: -100px;">
+            <v-btn icon @click="removeChild(index)" style="background-color: darkblue;color:white">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-btn @click="addChild" style="background-color: darkblue;color:white;text-transform: capitalize;" width="100%">Add Child</v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row>
       <v-col cols="12">
         <h3>Siblings' Details</h3>
         <br>
         <v-row v-for="(sibling, index) in form.siblings" :key="index" class="mb-3">
-          <v-col cols="6">
+          <v-col cols="4">
             <v-text-field
               label="Sibling's Name"
               v-model="sibling.name"
               required
               variant="outlined"
+              prepend-inner-icon="mdi-account-group"
             ></v-text-field>
           </v-col>
           <v-col cols="4">
@@ -437,6 +721,7 @@ const handleFileUpload = (event) => {
                   required
                   variant="outlined"
                   type="date"
+                  prepend-inner-icon="mdi-calendar"
                 ></v-text-field>
               </template>
               <v-date-picker
@@ -455,20 +740,24 @@ const handleFileUpload = (event) => {
         <v-btn @click="addSibling" style="background-color: darkblue;color:white;text-transform: capitalize;" width="100%">Add Sibling</v-btn>
       </v-col>
     </v-row>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="prevStep"><v-icon>mdi-chevron-left</v-icon>Previous</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="nextStep" :disabled="!validateStep(step)">Next <v-icon>mdi-chevron-right</v-icon></v-btn>
-        </v-card-actions>
-      </template>
+  </v-card-text>
+  <v-card-actions>
+    <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="prevStep">
+      <v-icon>mdi-chevron-left</v-icon>Previous
+    </v-btn>
+    <v-spacer></v-spacer>
+    <v-btn style="background-color: darkblue;color:white;text-transform: capitalize;" @click="nextStep" :disabled="!validateStep(step)">
+      Next <v-icon>mdi-chevron-right</v-icon>
+    </v-btn>
+  </v-card-actions>
+</template>
 
 
       <template v-if="step === 4">
   <!-- Step 4: Agreement and Generate PDF -->
   <v-card-text>
     <!-- Terms and Conditions Section -->
-    <div style="height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+    <div style="height:300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
       <h3>Terms and Conditions</h3>
       <p><strong>1. Introduction</strong></p>
       <p>Welcome to the Strathmore University Benevolent Fund (SUBF). By participating in this fund, you agree to comply with and be bound by the following terms and conditions.</p>
