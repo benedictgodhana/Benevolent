@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Expense;
+
 
 use App\Models\User;
 use App\Models\Contribution;
@@ -19,8 +21,12 @@ class AdminController extends Controller
     // Fetch total contributions amount
     $totalContributions = Contribution::sum('amount');
 
+    $totalExpense = Expense::sum('amount');
+
     // Fetch monthly collection amount for the current month
     $monthlyCollection = Contribution::whereMonth('created_at', now()->month)->sum('amount');
+
+    $netBalance = $totalContributions - $totalExpense;
 
     // Fetch contributions data grouped by month for the last 9 months
     $contributionsData = Contribution::selectRaw('DATE_FORMAT(created_at, "%b %Y") as month_year, SUM(amount) as total_amount')
@@ -34,6 +40,8 @@ class AdminController extends Controller
         'totalContributions' => $totalContributions,
         'monthlyCollection' => $monthlyCollection,
         'contributionsData' => $contributionsData,
+        'totalExpense'=>$totalExpense,
+        'NetBalance'=>$netBalance
     ]);
 }
 

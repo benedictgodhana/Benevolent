@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Contribution;
+use App\Models\Expense;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -20,12 +21,17 @@ class DashboardController extends Controller
             ->pluck('amount')
             ->toArray();
 
+        $totalExpense = Expense::sum('amount'); // Total expense amount
+        
+        $netBalance = $totalContributions - $totalExpense; // Net balance calculation
+
         return Inertia::render('Dashboard', [
             'totalUsers' => $totalUsers,
             'totalContributions' => $totalContributions,
             'monthlyCollection' => $monthlyCollection,
             'contributionsData' => $contributionsData,
+            'totalExpense' => $totalExpense,
+            'netBalance' => $netBalance,
         ]);
     }
 }
-

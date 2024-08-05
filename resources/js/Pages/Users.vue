@@ -2,7 +2,7 @@
   <AdminLayout>
     <v-container>
       <!-- Main content of the page -->
-      <v-card max-width="1500" elevation="0">
+      <v-card max-width="100%" width="100%"  elevation="0">
         <v-card-title class="text-center" style="background-color: darkblue; color: white; ">
           Users' List
           <v-spacer></v-spacer>
@@ -25,19 +25,43 @@
             <v-icon left>mdi-account-plus</v-icon> Add a member
           </v-chip>
         </v-card-text>
-        <v-divider></v-divider>
         <!-- Data Table -->
         <v-data-table
   :headers="headers"
   :items="filteredUsers"
-  :items-per-page="10"
+  :items-per-page="8"
   class="elevation-0"
+  style="text-transform: capitalize"
 >
-  <template v-slot:item.roles="{ item }">
+<template v-slot:item.profile_pic="{ item }">
+  <v-avatar size="50">
+    <img :src="item.profile_pic ? `/storage/${item.profile_pic}` : '/Images/male-avatar-icon.png'" alt="User Avatar" height="65">
+  </v-avatar>
+</template>
+<template v-slot:item.signedPdf="{ item }">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-if="item.profile && item.profile.signedPdf"
+            :href="`/storage/${item.profile.signedPdf}`"
+            target="_blank"
+            color="white"
+            elevation="0"
+            v-bind="props"
+          >
+            <v-icon>mdi-file-pdf-box</v-icon>
+          </v-btn>
+          <span v-else>No PDF</span>
+
+        </template>
+        <span>View Signed PDF</span>
+      </v-tooltip>
+    </template>
+<template v-slot:item.roles="{ item }">
     <span>{{ item.roles.join(', ') }}</span>
   </template>
   <template v-slot:item.actions="{ item }">
-    <v-chip icon color="white" @click="openDialog('edit', item)" elevation=0>
+    <v-chip icon color="white" @click="openDialog('edit', item)" elevation="0">
       <v-icon color="green">mdi-pencil</v-icon>
     </v-chip>
     <v-chip icon color="white" @click="openDialog('view', item)" elevation="0">
@@ -48,6 +72,7 @@
     </v-chip>
   </template>
 </v-data-table>
+
 
       </v-card>
 
@@ -327,6 +352,7 @@
             variant="outlined"
           ></v-text-field>
         </v-col>
+
       </v-row>
     </v-card-text>
   </v-card>
@@ -386,9 +412,11 @@ export default {
         }
       },
       headers: [
+      { title: 'Profile Pic', value: 'profile_pic' },
+      { title: 'Signed Form', value: 'signedPdf' },
         { title: 'Name', value: 'name' },
         { title: 'Email', value: 'email' },
-        { title: 'Membership Status', value: 'status' },
+        { title: 'Membership Status', value: 'profile.status' },
         { title: 'Roles', value: 'roles' },
         { title: 'Actions', value: 'actions', sortable: false },
       ],
@@ -409,7 +437,8 @@ export default {
     },
     filteredUsers() {
       // Filter users to only include those with the role "member"
-      return this.users.filter(user => user.roles.includes('member'));
+      return this.users.filter(user => user.roles.includes('member'))
+
     }
   },
   methods: {

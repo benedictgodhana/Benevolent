@@ -8,13 +8,15 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $users = User::with(['roles', 'profile'])->get()->map(function ($user) {
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'profile_pic' => $user->profile_pic,
                 'roles' => $user->roles->pluck('name'), // Extract only the role names
                 'profile' => $user->profile ? [
                     'surname' => $user->profile->surname,
@@ -44,8 +46,8 @@ class UserController extends Controller
                     'children' => $user->profile->children,
                     'siblings' => $user->profile->siblings,
                     'status' => $user->profile->approval_status,
+                    'signedPdf'=>$user->profile->signedPdf,
                 ] : null, // Handle case where profile might not exist
-                'profile_pic' => $user->profile_pic, // Add profile picture URL from users table
             ];
         });
 
@@ -53,6 +55,7 @@ class UserController extends Controller
             'users' => $users,
         ]);
     }
+
 
     public function updateProfilePic(Request $request)
     {
