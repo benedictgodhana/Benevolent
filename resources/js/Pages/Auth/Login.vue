@@ -42,10 +42,10 @@ const submit = () => {
 </script>
 
 <template>
-    <v-container class="d-flex justify-center align-center min-vh-100">
+    <v-container class="d-flex justify-center align-center min-vh-100 page-background" style="max-width: 1900px;">
         <Head title="Log in" />
 
-        <v-card max-width="500" width="100%" class="elevation-0 login-card">
+        <v-card max-width="700" width="100%" class="elevation-0 login-card">
             <!-- Logo -->
             <a href="/"> <v-img
                 src="/Images/University-Logo-Vertical-01.png"
@@ -131,8 +131,6 @@ const submit = () => {
                                 Don't have an account?
                             </Link>
                         </v-col>
-
-
                     </v-row>
                 </form>
             </v-card-text>
@@ -170,5 +168,9 @@ const submit = () => {
     justify-content: center;
     font-size: 1.5rem;
     font-weight: bold;
+}
+
+.page-background {
+    background-color:gray; /* Change this color to whatever you prefer */
 }
 </style>

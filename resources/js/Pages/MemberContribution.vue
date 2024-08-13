@@ -27,7 +27,7 @@
                 <v-divider></v-divider>
                 <div class="mt-3">
                   <v-divider></v-divider>
-                  <v-list class="mt-10" style="background-color: darkblue; color: white">
+                  <v-list nav  style="background-color: darkblue; color: white">
                     <v-list-item v-for="(item, i) in links" :key="i">
                       <NavLink :href="item.routeName" class="v-list-item" style="color: white;">
                         <template v-slot:default="{ href, isActive, isExactActive, isLink }">

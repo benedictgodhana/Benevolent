@@ -3,7 +3,7 @@
       app
       color="darkblue"
       dark
-      elevation="2"
+      elevation="5"
       class="nav-bar"
     >
       <v-container class="d-flex align-center justify-space-between">
@@ -14,6 +14,14 @@
           max-width="140"
           class="logo"
         ></v-img>
+
+        <!-- Slots for additional items -->
+        <template v-slot:additional-items>
+          <!-- Example: Add your additional items here -->
+          <v-btn text class="nav-link">Example Item 1</v-btn>
+          <v-btn text class="nav-link">Example Item 2</v-btn>
+          <!-- You can add more items as needed -->
+        </template>
 
         <!-- Navigation Links (Uncomment if needed) -->
         <!-- <v-btn text class="nav-link">Home</v-btn>
@@ -32,18 +40,17 @@
         ></v-text-field> -->
 
         <!-- Auth Links -->
+
         <div class="auth-links">
           <template v-if="props.canLogin">
             <Link v-if="props.auth.user" :href="route('dashboard')" class="btn">
               Dashboard
             </Link>
             <template v-else>
-              <Link v-if="props.canRegister" :href="route('register')" class="nav-link ms-4">
-                <v-icon size="19" color="orange">mdi-account-check</v-icon>
+              <Link v-if="props.canRegister" :href="route('register')" class="ms-4 nav-link" style="text-decoration: none;font-weight: 900;text-transform: uppercase;">
                 Membership Registration
               </Link>
-              <Link :href="route('login')" class="nav-link ms-4">
-                <v-icon size="19" color="orange">mdi-login</v-icon>
+              <Link :href="route('login')" class=" ms-4 nav-link" style="text-decoration: none;font-weight: 900;text-transform: uppercase;">
                 Log in
               </Link>
             </template>
@@ -64,7 +71,7 @@
   <style scoped>
   .nav-bar {
     background-color: darkblue;
-    height:90px
+    height: 90px;
   }
 
   .logo {
@@ -81,7 +88,6 @@
     align-items: center;
     transition: color 0.3s;
     margin-top: 20px;
-
   }
 
   .nav-link:hover {

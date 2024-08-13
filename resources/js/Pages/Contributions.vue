@@ -55,6 +55,8 @@
             :items="filteredContributions"
             :items-per-page="8"
             class="elevation-0"
+            show-select
+
           >
             <template v-slot:item.user="{ item }">
               <span>{{ item.user.name }}</span>

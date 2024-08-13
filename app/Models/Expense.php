@@ -22,6 +22,8 @@ class Expense extends Model
         'expense_date',
         'category_id',
         'user_id',
+        'created_by',
+        'code',  // Add this line
     ];
 
     // Define which attributes should be hidden for arrays
@@ -37,7 +39,7 @@ class Expense extends Model
     /**
      * Get the category that owns the expense.
      */
-    
+
 
     /**
      * Get the user that owns the expense.
@@ -45,5 +47,17 @@ class Expense extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+
+    public function contribution()
+    {
+        return $this->belongsTo(Contribution::class);
+    }
+
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

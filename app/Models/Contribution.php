@@ -19,4 +19,9 @@ class Contribution extends Model
     {
         return $this->belongsTo(UserProfile::class);
     }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
 }

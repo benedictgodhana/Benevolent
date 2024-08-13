@@ -88,10 +88,19 @@ class AdminController extends Controller
         return Inertia::render('Admin/Contribution');
     }
 
+   
+
 
     public function adminNotification(): Response
+
     {
-        return Inertia::render('Admin/Notifications');
+
+        $users = User::all(['name', 'profile_pic']); // Assuming you have these fields in your User model
+
+
+        return Inertia::render('Admin/Notifications',[
+            'users' => $users,
+        ]);
     }
 
 

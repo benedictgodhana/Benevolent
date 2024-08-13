@@ -3,8 +3,8 @@
       <Navbar /> <!-- Use the Navbar component -->
 
       <!-- Carousel Section -->
-      <v-carousel height="600" hide-delimiters="true" show-arrows="hover" cycle>
-        <v-carousel-item src="/Images/happy-family-silhouette-sunset.jpg" cover>
+      <v-carousel height="900" hide-delimiters="true" :show-arrows="false" cycle>
+        <v-carousel-item src="/Images/medium-shot-black-family-posing-studio.jpg" cover>
           <div class="carousel-item-overlay">
             <div class="overlay-text">
               <h1 class="animate-text">Welcome to Strathmore University Benevolent Fund(SUBF)</h1>
@@ -230,32 +230,61 @@
 
 
       <!-- Footer Section -->
-      <v-footer class="footer" style="background-color: darkblue; color: white;">
-        <v-container>
-          <v-row>
-            <v-col cols="12" md="4">
-              <v-img src="/Images/logo.png" height="60" contain></v-img>
-            </v-col>
-            <v-col cols="12" md="4">
-              <h3>Contact Us</h3>
-              <p>Email: info@strathmore.edu</p>
-              <p>Phone: +254 700 000 000</p>
-            </v-col>
-            <v-col cols="12" md="4">
-              <h3>Follow Us</h3>
-              <v-btn icon elevation="0" color="transparent">
-                <v-icon>mdi-facebook</v-icon>
-              </v-btn>
-              <v-btn icon color="transparent" elevation="0">
-                <v-icon>mdi-twitter</v-icon>
-              </v-btn>
-              <v-btn icon color="transparent" elevation="0">
-                <v-icon color="pink">mdi-instagram</v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-footer>
+      <v-footer class="footer" style="background-color:darkblue; color: white;">
+    <v-container>
+      <v-row>
+        <!-- First Column -->
+        <v-col cols="12" md="3">
+          <v-img src="/Images/logo.png" height="60" contain></v-img>
+          <p>The Strathmore Benevolent Fund is dedicated to supporting the welfare of our community through various initiatives and programs.</p>
+          <p>© Strathmore Benevolent Fund</p>
+        </v-col>
+
+        <!-- Second Column -->
+        <v-col cols="12" md="3">
+          <h3>Get in Touch</h3>
+          <p><v-icon left>mdi-map-marker</v-icon> Ole Sangale Road, Madaraka Estate, Nairobi, Kenya</p>
+          <p><v-icon left>mdi-email</v-icon> info@strathmore.edu</p>
+          <p><v-icon left>mdi-phone</v-icon> +254 700 000 000</p>
+        </v-col>
+
+        <!-- Third Column -->
+        <v-col cols="12" md="3">
+          <h3>Programs</h3>
+          <ul>
+            <li>Scholarships</li>
+            <li>Community Outreach</li>
+            <li>Health Initiatives</li>
+            <li>Education Support</li>
+            <li>Emergency Relief</li>
+            <li>Volunteer Opportunities</li>
+          </ul>
+        </v-col>
+
+        <!-- Fourth Column -->
+        <v-col cols="12" md="3">
+          <h3>Quick Links</h3>
+          <ul>
+            <li>About Us</li>
+            <li>Our Team</li>
+            <li>Projects</li>
+            <li>Blog</li>
+            <li>Contact Us</li>
+          </ul>
+          <v-btn icon elevation="0" color="transparent">
+            <v-icon>mdi-facebook</v-icon>
+          </v-btn>
+          <v-btn icon elevation="0" color="transparent">
+            <v-icon>mdi-twitter</v-icon>
+          </v-btn>
+          <v-btn icon elevation="0" color="transparent">
+            <v-icon>mdi-instagram</v-icon>
+          </v-btn>
+          <p>Follow us on social media for the latest updates and stories.</p>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-footer>
     </v-app>
   </template>
 
@@ -424,4 +453,23 @@
       transform: translateY(0);
     }
   }
+
+  .footer {
+  background-color: #1e2a38; /* Matching the dark blue background color */
+  color: white;
+  padding: 40px 0;
+}
+
+.footer h3 {
+  margin-top: 0;
+}
+
+.footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer ul li {
+  margin-bottom: 8px;
+}
   </style>

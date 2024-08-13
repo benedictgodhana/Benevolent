@@ -45,53 +45,30 @@
               :items="filteredRoles"
               :items-per-page="10"
               class="elevation-0"
+              show-select
             >
-              <template v-slot:column.actions="{ item }">
-                <!-- Edit Button with Dialog -->
-                <v-dialog v-model="dialog.edit" max-width="500px">
-                  <template v-slot:activator="{ on }">
-                    <v-tooltip top>
-                      <template v-slot:activator="{ on }">
-                        <v-chip icon color="white" v-bind="on">
-                          <v-icon color="green">mdi-pencil</v-icon>
-                        </v-chip>
-                      </template>
-                      <span>Edit</span>
-                    </v-tooltip>
-                  </template>
-                  <v-card>
-                    <v-card-title>Edit Role</v-card-title>
-                    <v-card-text>
-                      <!-- Edit form or content here -->
-                      <v-btn @click="saveEdit(item)">Save</v-btn>
-                      <v-btn @click="dialog.edit = false">Cancel</v-btn>
-                    </v-card-text>
-                  </v-card>
-                </v-dialog>
-
-                <!-- Delete Button with Dialog -->
-                <v-dialog v-model="dialog.delete" max-width="500px">
-                  <template v-slot:activator="{ on }">
-                    <v-tooltip top>
-                      <template v-slot:activator="{ on }">
-                        <v-chip icon color="white" v-bind="on">
-                          <v-icon color="red">mdi-delete</v-icon>
-                        </v-chip>
-                      </template>
-                      <span>Delete</span>
-                    </v-tooltip>
-                  </template>
-                  <v-card>
-                    <v-card-title>Delete Role</v-card-title>
-                    <v-card-text>
-                      <!-- Delete confirmation message -->
-                      <div>Are you sure you want to delete "{{ item.name }}"?</div>
-                      <v-btn @click="confirmDelete(item)">Confirm</v-btn>
-                      <v-btn @click="dialog.delete = false">Cancel</v-btn>
-                    </v-card-text>
-                  </v-card>
-                </v-dialog>
+            <template v-slot:item.actions="{ item }">
+            <v-menu bottom left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="primary"
+                  text
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  Actions
+                </v-btn>
               </template>
+              <v-list>
+                <v-list-item @click="editRole(item)">
+                  <v-list-item-title>Edit</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="deleteRole(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
             </v-data-table>
           </v-card-text>
         </v-card>
@@ -108,7 +85,6 @@
   const roles = ref(props.roles); // Assuming 'roles' prop is passed from backend
 
   const headers = [
-    { title: 'ID', value: 'id' },
     { title: 'Name', value: 'name' },
     { title: 'Guard Name', value: 'guard_name' },
     { title: 'Actions', value: 'actions', sortable: false },

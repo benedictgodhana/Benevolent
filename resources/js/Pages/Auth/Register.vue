@@ -260,7 +260,7 @@ const handleFileUpload = (event) => {
 
 
 <template>
-  <v-container class="d-flex justify-center align-center min-vh-100">
+  <v-container class="d-flex justify-center align-center min-vh-100 page-background" style="max-width: 1900px">
     <v-card max-width="800" width="100%" class="mx-auto" elevation="0">
 
       <v-img
@@ -271,9 +271,9 @@ const handleFileUpload = (event) => {
       ></v-img>
 
       <v-card-text>
-        <v-toolbar flat style="color:black" color="orange">
+        <v-toolbar flat style="color:black" color="white">
         <v-btn :href="route('login')" style="text-transform: capitalize;"><v-icon>mdi-chevron-left</v-icon>Login</v-btn>
-        <v-toolbar-title class="text-center">Membership Registration</v-toolbar-title>
+        <v-card-title class="text-center d-none d-md-inline-flex" style="margin-left: 120px;" >Membership Registration</v-card-title>
         <v-spacer></v-spacer>
       </v-toolbar>
       </v-card-text>
@@ -317,7 +317,7 @@ const handleFileUpload = (event) => {
           v-model="form.email"
           required
           variant="outlined"
-          prepend-inner-icon="mdi-email"
+          prepend-inner-icon="mdi-email-outline"
           :rules="[
             v => !!v || 'Email is required',
             v => /.+@strathmore\.edu$/.test(v) || 'Email must be a valid @strathmore.edu address'
@@ -869,5 +869,13 @@ const handleFileUpload = (event) => {
 </template>
 
 <style scoped>
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.page-background {
+    background-color:gray; /* Change this color to whatever you prefer */
+}
   /* Add your custom styles here */
 </style>

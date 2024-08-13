@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@inertiajs/inertia-vue3": "^0.6.0",
+        "@joeattardi/emoji-button": "^4.6.4",
         "@mdi/font": "^7.4.47",
         "apexcharts": "^3.50.0",
         "chart.js": "^4.4.3",
@@ -29,7 +30,10 @@
         "jspdf": "^2.5.1",
         "jspdf-autotable": "^3.8.2",
         "vue-chartjs": "^5.3.1",
+        "vue-chat-emoji": "^1.1.27",
         "vue3-apexcharts": "^1.5.3",
-        "vuetify": "^3.6.7"
+        "vue3-emoji-picker": "^1.1.8",
+        "vuetify": "^3.6.7",
+        "xlsx": "^0.18.5"
     }
 }

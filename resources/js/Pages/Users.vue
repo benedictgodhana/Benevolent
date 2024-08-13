@@ -2,37 +2,66 @@
   <AdminLayout>
     <v-container>
       <!-- Main content of the page -->
-      <v-card max-width="100%" width="100%"  elevation="0">
+      <v-card  width="100%"  elevation="0">
         <v-card-title class="text-center" style="background-color: darkblue; color: white; ">
           Users' List
           <v-spacer></v-spacer>
         </v-card-title>
         <br>
         <v-card-text>
-          <v-chip color="red" @click="importUsers" class="mr-4" label elevation="5">
-            <v-icon left>mdi-upload</v-icon> Import
-          </v-chip>
+
           <!-- Print Button -->
-          <v-chip @click="printUsers" class="mr-4" label elevation="5">
+          <v-btn @click="printUsers" class="mr-4" label elevation="2" color="red" style="text-transform: capitalize;">
             <v-icon left>mdi-printer</v-icon> Print
-          </v-chip>
+          </v-btn>
           <!-- Export Button -->
-          <v-chip color="green" @click="exportUsers" class="mr-4" label elevation="5">
+          <v-btn color="green" @click="exportUsers" class="mr-4" label elevation="2" style="text-transform: capitalize;">
             <v-icon left>mdi-download</v-icon> Export
-          </v-chip>
+          </v-btn>
+
+          <v-btn @click="resetFilters" class="mr-4" color="primary" label elevation="2" style="text-transform: capitalize;">
+  <v-icon left>mdi-refresh</v-icon> Reset
+</v-btn>
+
           <!-- Add Member Button -->
-          <v-chip color="purple" @click="addMember" label elevation="5">
-            <v-icon left>mdi-account-plus</v-icon> Add a member
-          </v-chip>
+
+
+          <v-row>
+            <v-col>
+                <v-text-field
+            v-model="search"
+            label="Search"
+            class="mt-4"
+            append-icon="mdi-magnify"
+            variant="underlined"
+
+          ></v-text-field>
+            </v-col>
+            <v-col>
+                <v-select
+            v-model="selectedStatus"
+            :items="status"
+            label="Filter by Membership Status"
+            class="mt-4"
+            :clearable="true"
+            variant="underlined"
+          ></v-select>
+            </v-col>
+          </v-row>
         </v-card-text>
         <!-- Data Table -->
         <v-data-table
   :headers="headers"
   :items="filteredUsers"
   :items-per-page="8"
-  class="elevation-0"
-  style="text-transform: capitalize"
+  class="elevation-0 "
+  style="text-transform: none"
+  show-select
+    fixed-header
+
 >
+
+
 <template v-slot:item.profile_pic="{ item }">
   <v-avatar size="50">
     <img :src="item.profile_pic ? `/storage/${item.profile_pic}` : '/Images/male-avatar-icon.png'" alt="User Avatar" height="65">
@@ -395,6 +424,9 @@
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default {
   components: {
@@ -411,9 +443,15 @@ export default {
           surname: '' // Add other default fields as needed
         }
       },
+
+      status: ['approved', 'pending', 'Declined'], // Add your roles here
+      search: '',
+      selectedRole: null,
+      selectedStatus: null,
       headers: [
       { title: 'Profile Pic', value: 'profile_pic' },
       { title: 'Signed Form', value: 'signedPdf' },
+      { title: 'Staff No.', value: 'profile.employeeNo' },
         { title: 'Name', value: 'name' },
         { title: 'Email', value: 'email' },
         { title: 'Membership Status', value: 'profile.status' },
@@ -433,13 +471,24 @@ export default {
   },
   computed: {
     formattedRoles() {
-      return this.selectedUser.roles ? this.selectedUser.roles.join(', ') : '';
+      return this.selectedUser.roles.join(', ');
     },
     filteredUsers() {
-      // Filter users to only include those with the role "member"
-      return this.users.filter(user => user.roles.includes('member'))
+    return this.users.filter(user => {
+        const matchesSearch = user.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                              user.email.toLowerCase().includes(this.search.toLowerCase()) ||
+                              (user.profile && user.profile.employeeNo && user.profile.employeeNo.toLowerCase().includes(this.search.toLowerCase()));
 
-    }
+        const matchesRole = user.roles.includes('member'); // Ensure only users with role 'member' are included
+
+        // Check if user.profile is not null before accessing its properties
+        const matchesStatus = this.selectedStatus ? user.profile && user.profile.status === this.selectedStatus : true;
+
+        return matchesSearch && matchesRole && matchesStatus;
+    });
+}
+
+
   },
   methods: {
     openDialog(type, user) {
@@ -498,19 +547,127 @@ export default {
     importUsers() {
       console.log('Importing users');
     },
+
     printUsers() {
-      console.log('Printing users');
-    },
+    const hasSearchOrFilter = this.search || this.selectedRole || this.selectedStatus;
+    const usersToPrint = hasSearchOrFilter ? this.filteredUsers : this.users;
+
+    const filteredUsersForPrint = usersToPrint.filter(user => user.roles.includes('member'));
+
+    // Create a new jsPDF instance with custom page size
+    const doc = new jsPDF({
+      orientation: 'portrait', // Change to 'landscape' if needed
+      unit: 'mm',
+      format: [297, 210] // Custom page size in mm (A4 size: 210mm x 297mm)
+    });
+
+    // Define columns for the PDF table
+    const columns = [
+      { header: 'Name', dataKey: 'name', width: 30 },
+      { header: 'Email', dataKey: 'email', width: 40 },
+      { header: 'Role Name', dataKey: 'roles', width: 40 },
+      { header: 'Dept', dataKey: 'department_id', width: 30 },
+      { header: 'Employment Type', dataKey: 'employmentType', width: 30 },
+      { header: 'Employee No', dataKey: 'employeeNo', width: 30 },
+      { header: 'Gender', dataKey: 'sex', width: 20 },
+      { header: 'Religion', dataKey: 'religion', width: 30 },
+      { header: 'Tel R', dataKey: 'telR', width: 30 },
+      { header: 'Status', dataKey: 'status', width: 30 },
+    ];
+
+    // Prepare the data for the PDF table
+    const data = filteredUsersForPrint.map(user => ({
+      name: user.name,
+      email: user.email,
+      roles: user.roles.includes('member') ? 'member' : '', // Filter roles to include only 'member'
+      department_id: user.profile ? user.profile.department_id : '',
+      employmentType: user.profile ? user.profile.employmentType : '',
+      employeeNo: user.profile ? user.profile.employeeNo : '',
+      sex: user.profile ? user.profile.sex : '',
+      religion: user.profile ? user.profile.religion : '',
+      telR: user.profile ? user.profile.telR : '',
+      status: user.profile ? user.profile.status : '',
+    }));
+
+    // Add the table to the PDF document
+    doc.autoTable({
+      columns: columns,
+      body: data,
+      margin: { top: 10, left: 10, right: 10, bottom: 30 }, // Adjust bottom margin for summary section
+      styles: { fontSize: 8 }, // Adjust font size if needed
+    });
+
+    // Add the total number of members at the bottom of the PDF
+    const totalMembers = filteredUsersForPrint.length;
+    doc.setFontSize(12);
+    doc.text(`Total Members: ${totalMembers}`, 10, doc.internal.pageSize.height -20);
+
+    // Save the PDF file
+    doc.save('users.pdf');
+  },
     exportUsers() {
-      console.log('Exporting users');
+      // Determine if the user has applied any search or filter criteria
+      const hasSearchOrFilter = this.search || this.selectedRole || this.selectedStatus;
+
+      // Use filteredUsers if there are search or filter criteria, otherwise use all users
+      const usersToExport = hasSearchOrFilter ? this.filteredUsers : this.users;
+
+      // Generate worksheet from selected users
+      const worksheet = XLSX.utils.json_to_sheet(usersToExport.map(user => ({
+        Name: user.name,
+        Email: user.email,
+        'Role Name': user.roles.join(', '), // Assuming roles is an array
+        'Surname': user.profile ? user.profile.surname : '',
+        'Other Names': user.profile ? user.profile.otherNames : '',
+        'Dept': user.profile ? user.profile.department_id : '',
+        'Employment Type': user.profile ? user.profile.employmentType : '',
+        'Employee No': user.profile ? user.profile.employeeNo : '',
+        'Date of Birth': user.profile ? user.profile.dateOfBirth : '',
+        'Sex': user.profile ? user.profile.sex : '',
+        'Religion': user.profile ? user.profile.religion : '',
+        'Tel R': user.profile ? user.profile.telR : '',
+        'Tel Cell': user.profile ? user.profile.telCell : '',
+        'Current Address': user.profile ? user.profile.currentAddress : '',
+        'Residence': user.profile ? user.profile.residence : '',
+        'Postal Address': user.profile ? user.profile.postalAddress : '',
+        'Home District': user.profile ? user.profile.homeDistrict : '',
+        'Father Name': user.profile ? user.profile.fatherName : '',
+        'Father DOB': user.profile ? user.profile.fatherDOB : '',
+        'Father Occupation': user.profile ? user.profile.fatherOccupation : '',
+        'Mother Name': user.profile ? user.profile.motherName : '',
+        'Mother DOB': user.profile ? user.profile.motherDOB : '',
+        'Mother Occupation': user.profile ? user.profile.motherOccupation : '',
+        'Marital Status': user.profile ? user.profile.maritalStatus : '',
+        'Spouse Name': user.profile ? user.profile.spouseName : '',
+        'Date of Marriage': user.profile ? user.profile.dateOfMarriage : '',
+        'Spouse Tel': user.profile ? user.profile.spouseTel : '',
+        'Children': user.profile ? user.profile.children : '',
+        'Siblings': user.profile ? user.profile.siblings : '',
+      })));
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+
+      // Generate Excel file with a relevant filename
+      XLSX.writeFile(workbook, hasSearchOrFilter ? 'filtered_users.xlsx' : 'all_users.xlsx');
     },
     addMember() {
       console.log('Adding a member');
     },
+
+    resetFilters() {
+    this.search = '';
+    this.selectedRole = null;
+    this.selectedStatus = null;
+  }
   },
 };
 </script>
 
 <style scoped>
+
+header.data-table{
+    background-color: blue;
+}
 /* Add scoped styles here */
 </style>

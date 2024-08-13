@@ -1,7 +1,7 @@
 <template>
     <Head title="Dashboard" />
 
-    <AdminLayout>
+    <AdminLayout >
         <v-container fluid>
             <v-row>
                 <!-- Card for Total Users -->

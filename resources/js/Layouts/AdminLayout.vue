@@ -31,14 +31,37 @@
           </template>
         </NavLink>
       </v-list-item>
+
+      <v-list-group
+            v-model="activeSettingsGroup"
+            prepend-icon="mdi-cog"
+            class="mt-2"
+          >
+            <template v-slot:activator="{ props }">
+              <v-list-item v-bind="props" title="Settings" prepend-icon="mdi-cog" color="white" active-class="active-button"></v-list-item>
+            </template>
+
+            <v-list-item :href="route('adminsettings')" prepend-icon="mdi-account-settings" title="Account Settings" color="white" elevation="0" active-class="active-button"></v-list-item>
+            <v-list-item :href="route('adminnotification')" prepend-icon="mdi-bell" title="Notifications Settings" color="white" elevation="0" active-class="active-button"></v-list-item>
+            <v-list-item :href="route('profile')" prepend-icon="mdi-account" title="My profile" color="white" elevation="0" active-class="active-button"></v-list-item>
+            <v-list-item :href="route('admincontribution')" prepend-icon="mdi-cash" title="My Contribution" color="white" elevation="0" active-class="active-button"></v-list-item>
+
+
+          </v-list-group>
+
+          <v-btn
+    class="mr-4"
+    elevation="2"
+    color="red"
+    width="100%"
+    @click="$inertia.post(route('logout'))"
+    style="color: white; background-color: red;text-transform: capitalize;margin-top: 100px">
+    <v-icon left>mdi-logout</v-icon> Log Out
+</v-btn>
     </v-list>
 
     <!-- Logout Button -->
-    <v-list  nav style="margin-top: 380px" >
-      <v-list-item @click="logout" class="cursor-pointer" prepend-icon="mdi-logout" value="Logout" elevation="5" style="background-color: red">
-          <v-list-item-title class="text-white">Logout</v-list-item-title>
-      </v-list-item>
-    </v-list>
+
   </v-navigation-drawer>
 
       <!-- App Bar -->
@@ -52,7 +75,6 @@
 
         <!-- Search Bar -->
 
-        <v-chip label elevation="5" :href="route('profile')" class="mr-4" style="background-color: darkblue;color:white;"><v-icon>mdi-account</v-icon>My Profile and Contribution History</v-chip>
         <v-chip label elevation="5"  style="background-color: orange;" class="mr-4">
           <v-icon >mdi-bell-outline</v-icon> Notification
         </v-chip>
@@ -85,7 +107,7 @@
     { text: 'Members', routeName: 'users', icon: 'mdi-account-multiple' },
     { text: 'Manage Roles', routeName: 'manage-roles', icon: 'mdi-account-group' },
     { text: 'Contributions', routeName: 'contributions', icon: 'mdi-cash' },
-    { text: 'Manage Expenses', routeName: 'contributions', icon: 'mdi-cash' }
+    { text: 'Manage Expenses', routeName: 'expenses', icon: 'mdi-cash' }
 
   ];
   </script>

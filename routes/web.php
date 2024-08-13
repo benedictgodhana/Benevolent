@@ -5,7 +5,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
     use App\Http\Controllers\ContributionController;
-    use Illuminate\Foundation\Application;
+use App\Http\Controllers\ExpenseController;
+use Illuminate\Foundation\Application;
     use Illuminate\Support\Facades\Route;
     use Inertia\Inertia;
     use App\Http\Controllers\UserController;
@@ -77,6 +78,11 @@ use App\Http\Controllers\ProfileController;
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/contributions', [ContributionController::class, 'contribution'])->name('contributions.index');
+
+    Route::get('/expenses', [ExpenseController::class, 'expense'])->name('expense.index');
+    Route::post('/expenses', [ExpenseController::class, 'store']);
+    Route::post('/expenses/import', [ExpenseController::class, 'import'])->name('expenses.import');
+
 
 
     Route::get('/manage-roles', [RoleController::class, 'index'])->name('roles.index');
